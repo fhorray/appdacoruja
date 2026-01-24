@@ -1,6 +1,6 @@
 export const ROUTES = {
   public: ['/auth', '/', "/pricing"],
-  private: ['/dashboard', '/settings', '/profile', '/analisar'],
+  private: ['/', '/settings', '/profile', '/analisar'],
   auth: ['/auth'],
 }
 

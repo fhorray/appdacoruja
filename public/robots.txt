@@ -1,0 +1,22 @@
+# Robots.txt - App da Coruja
+# Permitir indexação de páginas públicas, bloquear áreas privadas
+
+User-agent: *
+
+# Permitir acesso a páginas públicas
+Allow: /
+Allow: /planos
+Allow: /sobre
+Allow: /blog/
+
+# Bloquear áreas privadas (dashboard e app)
+Disallow: /app/
+Disallow: /dashboard/
+Disallow: /transactions/
+Disallow: /annual/
+Disallow: /limits/
+Disallow: /import/
+Disallow: /settings/
+
+# Sitemap
+Sitemap: https://appdacoruja.com/sitemap.xml

@@ -36,7 +36,7 @@ const InputField = ({ label, icon, description, ...props }: InputProps) => {
 
       <div className="relative w-full">
         {
-          <span className="absolute top-2.5 left-2 max-w-4 max-h-4 object-cover">
+          <span className="absolute top-2.5 left-4 max-w-4 max-h-4 object-cover">
             {Icon && <Icon className="w-4 h-4 opacity-45" />}
           </span>
         }
