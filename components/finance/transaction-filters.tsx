@@ -28,6 +28,9 @@ export function TransactionFilters({
   const userId = session?.user?.id;
   const { categoriesQuery, responsiblePersonsQuery } = useFinance(userId || "");
 
+  // Helper to visually check if a filter is active
+  const isActive = (val: string | null) => val !== null && val !== "";
+
   const prevTypeRef = useRef(filters.type);
 
   useEffect(() => {
@@ -53,47 +56,55 @@ export function TransactionFilters({
   ];
 
   return (
-    <div className="bg-card rounded-xl shadow-sm border p-6 mb-6">
-      <div className="flex items-center gap-2 mb-4">
-        <Filter className="w-5 h-5 text-muted-foreground" />
-        <h3 className="text-lg font-semibold text-foreground">Filtros</h3>
+    <div className="flex flex-col gap-3 mb-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Filter className="w-5 h-5 text-muted-foreground" />
+          <h3 className="text-lg font-semibold text-foreground">Filtros</h3>
+        </div>
+        {(isActive(filters.month) || isActive(filters.type) || isActive(filters.category) || isActive(filters.status) || isActive(filters.responsible)) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClearFilters}
+            className="text-xs text-muted-foreground h-8"
+          >
+            Limpar
+          </Button>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <div className="space-y-1.5">
-          <Label>
-            Mês {!filters.month && <span className="text-muted-foreground font-normal">(Todos)</span>}
-          </Label>
+      <div className="flex overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible gap-2 hide-scrollbar">
+        
+        <div className="min-w-[140px] shrink-0">
           <Input
             type="month"
             value={filters.month || ''}
             onChange={(e) => onFilterChange('month', e.target.value)}
-            className="w-full"
+            className="h-9 rounded-full bg-card"
           />
         </div>
 
-        <div className="space-y-1.5">
-          <Label>Tipo</Label>
+        <div className="min-w-[120px] shrink-0">
           <Select value={filters.type || 'all'} onValueChange={(value) => onFilterChange('type', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Todos" />
+            <SelectTrigger className="h-9 rounded-full bg-card">
+              <SelectValue placeholder="Tipo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="all">Todos os tipos</SelectItem>
               <SelectItem value="expense">Despesa</SelectItem>
               <SelectItem value="income">Receita</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <div className="space-y-1.5">
-          <Label>Categoria</Label>
+        <div className="min-w-[130px] shrink-0">
           <Select disabled={!filters.type} value={filters.category || 'all'} onValueChange={(value) => onFilterChange('category', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Todas" />
+            <SelectTrigger className="h-9 rounded-full bg-card">
+              <SelectValue placeholder="Categoria" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
+              <SelectItem value="all">Todas categorias</SelectItem>
               {activeCategories.map((category) => (
                 <SelectItem key={category.id} value={category.name}>
                   {category.name}
@@ -101,19 +112,15 @@ export function TransactionFilters({
               ))}
             </SelectContent>
           </Select>
-          {!filters.type && (
-            <p className="text-[10px] text-muted-foreground">Selecione um tipo primeiro</p>
-          )}
         </div>
 
-        <div className="space-y-1.5">
-          <Label>Status</Label>
+        <div className="min-w-[120px] shrink-0">
           <Select value={filters.status || 'all'} onValueChange={(value) => onFilterChange('status', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Todos" />
+            <SelectTrigger className="h-9 rounded-full bg-card">
+              <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="all">Todos os status</SelectItem>
               {STATUS_OPTIONS.map((status) => (
                 <SelectItem key={status.value} value={status.value}>
                   {status.label}
@@ -122,15 +129,14 @@ export function TransactionFilters({
             </SelectContent>
           </Select>
         </div>
-
-        <div className="space-y-1.5">
-          <Label>Responsável</Label>
+        
+        <div className="min-w-[130px] shrink-0">
           <Select value={filters.responsible || 'all'} onValueChange={(value) => onFilterChange('responsible', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Todos" />
+            <SelectTrigger className="h-9 rounded-full bg-card">
+              <SelectValue placeholder="Responsável" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="all">Todos os resp.</SelectItem>
               {activeResponsiblePersons.map((resp) => (
                 <SelectItem key={resp.id} value={resp.name}>
                   {resp.name}
@@ -139,16 +145,7 @@ export function TransactionFilters({
             </SelectContent>
           </Select>
         </div>
-      </div>
 
-      <div className="mt-4 flex justify-end">
-        <Button
-          variant="ghost"
-          onClick={onClearFilters}
-          className="text-muted-foreground"
-        >
-          Limpar Filtros
-        </Button>
       </div>
     </div>
   );

@@ -14,71 +14,107 @@ import {
   updateTransactionAction,
   upsertCategoryLimitAction
 } from "@/server/actions"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 export const useFinance = (userId?: string) => {
+  const queryClient = useQueryClient();
+
   // --- Transactions ---
   const transactionsQuery = useQuery({
     queryKey: ['transactions', userId],
     queryFn: () => getTransactionsAction(userId),
+    enabled: !!userId,
   });
 
   const createTransaction = useMutation({
-    mutationFn: createTransactionAction
+    mutationFn: createTransactionAction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions', userId] });
+    }
   });
 
   const updateTransaction = useMutation({
-    mutationFn: updateTransactionAction
+    mutationFn: updateTransactionAction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions', userId] });
+    }
   });
 
   const deleteTransaction = useMutation({
-    mutationFn: deleteTransactionAction
+    mutationFn: deleteTransactionAction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions', userId] });
+    }
   });
 
   // --- Categories ---
   const categoriesQuery = useQuery({
     queryKey: ['categories', userId],
     queryFn: () => getCategoriesAction(userId),
+    enabled: !!userId,
   });
 
   const createCategory = useMutation({
-    mutationFn: createCategoryAction
+    mutationFn: createCategoryAction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories', userId] });
+    }
   });
 
   const updateCategory = useMutation({
-    mutationFn: updateCategoryAction
+    mutationFn: updateCategoryAction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories', userId] });
+    }
   });
 
   const deleteCategory = useMutation({
-    mutationFn: deleteCategoryAction
+    mutationFn: deleteCategoryAction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories', userId] });
+    }
   });
 
   // --- Responsible Persons ---
   const responsiblePersonsQuery = useQuery({
     queryKey: ['responsible-persons', userId],
     queryFn: () => getResponsiblePersonsAction(userId),
+    enabled: !!userId,
   });
 
   const createResponsiblePerson = useMutation({
-    mutationFn: createResponsiblePersonAction
+    mutationFn: createResponsiblePersonAction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['responsible-persons', userId] });
+    }
   });
 
   const updateResponsiblePerson = useMutation({
-    mutationFn: updateResponsiblePersonAction
+    mutationFn: updateResponsiblePersonAction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['responsible-persons', userId] });
+    }
   });
 
   const deleteResponsiblePerson = useMutation({
-    mutationFn: deleteResponsiblePersonAction
+    mutationFn: deleteResponsiblePersonAction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['responsible-persons', userId] });
+    }
   });
 
   // --- Category Limits ---
   const categoryLimitsQuery = useQuery({
     queryKey: ['category-limits', userId],
     queryFn: () => getCategoryLimitsAction(userId),
+    enabled: !!userId,
   });
 
   const upsertCategoryLimit = useMutation({
-    mutationFn: upsertCategoryLimitAction
+    mutationFn: upsertCategoryLimitAction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['category-limits', userId] });
+    }
   });
 
   return {

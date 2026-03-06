@@ -4,7 +4,7 @@ import { useState, Suspense } from 'react';
 import { Plus } from 'lucide-react';
 import { TransactionFilters } from '@/components/finance/transaction-filters';
 import { TransactionList } from '@/components/finance/transaction-list';
-import { TransactionFormModal } from '@/components/finance/transaction-form-modal';
+import { TransactionFormModal } from '@/components/finance/transaction-form-sheet';
 import { useFinance } from '@/hooks/use-finance';
 import { useAuth } from '@/hooks/use-auth';
 import { PageHeader } from '@/components/page-header';

@@ -132,8 +132,8 @@ export function CategoryChart({ expenses, incomes, totalIncome, totalExpense }: 
               </div>
 
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {incomes.map((item) => (
-                  <div key={item.category} className="flex items-center gap-2">
+                {incomes.map((item, index) => (
+                  <div key={index} className="flex items-center gap-2">
                     <div
                       className="w-3 h-3 rounded-full flex-shrink-0"
                       style={{ backgroundColor: incomeColorMap[item.category] }}
@@ -170,8 +170,8 @@ export function CategoryChart({ expenses, incomes, totalIncome, totalExpense }: 
 
           {expenses.length > 0 ? (
             <div className="space-y-3">
-              {expenses.map((item) => (
-                <div key={item.category}>
+              {expenses.map((item, index) => (
+                <div key={index}>
                   <div className="flex justify-between items-center mb-2">
                     <div className="flex items-center gap-2">
                       <div

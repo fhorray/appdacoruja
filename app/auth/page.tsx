@@ -10,73 +10,76 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useForm } from '@/hooks/use-form';
 
 export default function AuthPage() {
     const router = useRouter();
     const { login, register } = useAuth();
     const [mode, setMode] = useState<'login' | 'signup'>('login');
 
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
+    const form = useForm({
+        defaultValues: {
+            name: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+        },
+        onSubmit: async ({ value }) => {
+            setError('');
+            setLoading(true);
 
-        if (mode === 'signup') {
-            if (password !== confirmPassword) {
-                setError('As senhas não coincidem.');
-                setLoading(false);
-                return;
-            }
-
-            await register.email({
-                email,
-                password,
-                name,
-                callbackURL: '/',
-            }, {
-                onError: (ctx) => {
-                    setError(ctx.error.message || 'Erro ao criar conta.');
+            if (mode === 'signup') {
+                if (value.password !== value.confirmPassword) {
+                    setError('As senhas não coincidem.');
                     setLoading(false);
-                },
-                onSuccess: () => {
-                    setSuccess(true);
-                    setLoading(false);
-                    toast.success('Conta criada com sucesso!');
-                    setTimeout(() => router.push('/'), 2000);
-                },
-            });
-        } else {
-            await login.email({
-                email,
-                password,
-                rememberMe: true,
-                callbackURL: '/',
-            }, {
-                onError: (ctx) => {
-                    if (ctx.error.message?.includes('Invalid login credentials')) {
-                        setError('Email ou senha incorretos.');
-                    } else {
-                        setError(ctx.error.message || 'Erro ao fazer login.');
-                    }
-                    setLoading(false);
-                },
-                onSuccess: () => {
-                    toast.success('Login realizado!');
-                    setLoading(false);
-                    router.push('/');
+                    return;
                 }
-            });
-        }
-    };
+
+                await register.email({
+                    email: value.email,
+                    password: value.password,
+                    name: value.name,
+                    callbackURL: '/',
+                }, {
+                    onError: (ctx) => {
+                        setError(ctx.error.message || 'Erro ao criar conta.');
+                        setLoading(false);
+                    },
+                    onSuccess: () => {
+                        setSuccess(true);
+                        setLoading(false);
+                        toast.success('Conta criada com sucesso!');
+                        setTimeout(() => router.push('/'), 2000);
+                    },
+                });
+            } else {
+                await login.email({
+                    email: value.email,
+                    password: value.password,
+                    rememberMe: true,
+                    callbackURL: '/',
+                }, {
+                    onError: (ctx) => {
+                        if (ctx.error.message?.includes('Invalid login credentials')) {
+                            setError('Email ou senha incorretos.');
+                        } else {
+                            setError(ctx.error.message || 'Erro ao fazer login.');
+                        }
+                        setLoading(false);
+                    },
+                    onSuccess: () => {
+                        toast.success('Login realizado!');
+                        setLoading(false);
+                        router.push('/');
+                    }
+                });
+            }
+        },
+    });
 
     const handleSocialAuth = async (provider: 'github' | 'google' | 'facebook') => {
         setError('');
@@ -113,13 +116,20 @@ export default function AuthPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-zinc-50 dark:bg-black">
-            <div className="w-full max-w-[1000px] grid lg:grid-cols-2 gap-0 items-stretch bg-background rounded-[32px] overflow-hidden border border-border/60">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-white dark:bg-black relative overflow-hidden">
+            {/* Subtle Wavy Pattern Overlay on Main Background */}
+            <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='20' viewBox='0 0 100 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M21.184 20c.357-.13.72-.264 1.088-.402l1.768-.661C33.64 15.347 39.647 13 50 13s16.36 2.347 25.96 5.937l1.768.661c.368.138.73.272 1.088.402H100V0H0v20h21.184z' fill='%23000' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E")` }}></div>
+            
+            {/* Subtle Glow Effects on Main Background */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-100 dark:bg-blue-900/20 rounded-full blur-[120px]" />
+                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-50 dark:bg-blue-900/10 rounded-full blur-[120px]" />
+            </div>
+
+            <div className="w-full max-w-[1000px] grid lg:grid-cols-2 gap-0 items-stretch bg-background rounded-[32px] overflow-hidden border border-border/60 relative z-10 shadow-2xl">
                 
                 {/* Left side Image or Brand Graphic - Hidden on small screens */}
-                <div className="hidden lg:flex flex-col justify-center p-12 bg-gradient-to-br from-indigo-950 via-blue-900 to-indigo-950 text-white h-auto relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-                    
+                <div className="hidden lg:flex flex-col justify-center p-12 bg-[#003153] text-white h-auto relative overflow-hidden">
                     <div className="relative z-10">
                         <div className="mb-10">
                            <Image 
@@ -131,22 +141,22 @@ export default function AuthPage() {
                             />
                         </div>
                         <h1 className="text-4xl font-bold tracking-tight mb-4 leading-tight">
-                            Finanças de forma <span className="text-primary italic">simples.</span>
+                            Finanças de forma <span className="text-white italic">simples.</span>
                         </h1>
-                        <p className="text-zinc-400 text-lg max-w-sm mb-10 leading-relaxed">
+                        <p className="text-blue-100/80 text-lg max-w-sm mb-10 leading-relaxed">
                             A plataforma definitiva para você retomar o controle total da sua vida financeira com inteligência.
                         </p>
                         
                         <div className="space-y-4">
-                            <div className="flex items-center gap-3 text-zinc-300 text-sm font-medium">
-                                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-                                    <CheckCircle2 className="w-4 h-4 text-primary" />
+                            <div className="flex items-center gap-3 text-blue-50/90 text-sm font-medium">
+                                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                                    <CheckCircle2 className="w-4 h-4 text-white" />
                                 </div>
                                 Metas inteligentes e automáticas
                             </div>
-                            <div className="flex items-center gap-3 text-zinc-300 text-sm font-medium">
-                                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-                                    <CheckCircle2 className="w-4 h-4 text-primary" />
+                            <div className="flex items-center gap-3 text-blue-50/90 text-sm font-medium">
+                                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                                    <CheckCircle2 className="w-4 h-4 text-white" />
                                 </div>
                                 Relatórios visuais em tempo real
                             </div>
@@ -178,84 +188,84 @@ export default function AuthPage() {
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-5 animate-in slide-in-from-bottom-6 duration-700 fade-in">
+                    <form 
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            form.handleSubmit();
+                        }} 
+                        className="space-y-5 animate-in slide-in-from-bottom-6 duration-700 fade-in"
+                    >
                         {mode === 'signup' && (
-                            <div className="space-y-2">
-                                <Label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">Nome completo</Label>
-                                <div className="relative">
-                                    <User className="absolute left-4 top-3.5 h-4 w-4 text-muted-foreground/60" />
-                                    <Input 
-                                        id="name" 
-                                        value={name} 
-                                        onChange={e => setName(e.target.value)}
-                                        className="pl-12 h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl" 
-                                        placeholder="Seu nome" 
-                                        required 
+                            <form.AppField
+                                name="name"
+                                children={(field) => (
+                                    <field.InputField
+                                        label="Nome completo"
+                                        icon={User}
+                                        placeholder="Seu nome"
+                                        className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                                        required
                                     />
-                                </div>
-                            </div>
+                                )}
+                            />
                         )}
 
-                        <div className="space-y-2">
-                            <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">Email</Label>
-                            <div className="relative">
-                                <Mail className="absolute left-4 top-3.5 h-4 w-4 text-muted-foreground/60" />
-                                <Input 
-                                    id="email" 
-                                    type="email" 
-                                    value={email} 
-                                    onChange={e => setEmail(e.target.value)}
-                                    className="pl-12 h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl" 
-                                    placeholder="seu@email.com" 
-                                    required 
+                        <form.AppField
+                            name="email"
+                            children={(field) => (
+                                <field.InputField
+                                    label="Email"
+                                    type="email"
+                                    icon={Mail}
+                                    placeholder="seu@email.com"
+                                    className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                                    required
                                 />
-                            </div>
-                        </div>
+                            )}
+                        />
 
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between ml-1">
-                                <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Senha</Label>
-                                {mode === 'login' && (
-                                    <a href="#" className="text-xs font-semibold text-primary hover:opacity-80 transition-opacity">
-                                        Esqueceu?
-                                    </a>
-                                )}
-                            </div>
-                            <div className="relative">
-                                <Lock className="absolute left-4 top-3.5 h-4 w-4 text-muted-foreground/60" />
-                                <Input 
-                                    id="password" 
-                                    type="password" 
-                                    value={password} 
-                                    onChange={e => setPassword(e.target.value)}
-                                    className="pl-12 h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl" 
-                                    placeholder="••••••••" 
-                                    required 
-                                />
-                            </div>
-                        </div>
-
-                        {mode === 'signup' && (
-                            <div className="space-y-2">
-                                <Label htmlFor="confirmPassword" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">Confirmar senha</Label>
-                                <div className="relative">
-                                    <Lock className="absolute left-4 top-3.5 h-4 w-4 text-muted-foreground/60" />
-                                    <Input 
-                                        id="confirmPassword" 
-                                        type="password" 
-                                        value={confirmPassword} 
-                                        onChange={e => setConfirmPassword(e.target.value)}
-                                        className="pl-12 h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl" 
-                                        placeholder="••••••••" 
-                                        required 
+                        <form.AppField
+                            name="password"
+                            children={(field) => (
+                                <div className="space-y-2">
+                                     <div className="flex items-center justify-between ml-1">
+                                        <label htmlFor={field.name} className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Senha</label>
+                                        {mode === 'login' && (
+                                            <a href="#" className="text-xs font-semibold text-primary hover:opacity-80 transition-opacity">
+                                                Esqueceu?
+                                            </a>
+                                        )}
+                                    </div>
+                                    <field.InputField
+                                        type="password"
+                                        icon={Lock}
+                                        placeholder="••••••••"
+                                        className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                                        required
                                     />
                                 </div>
-                            </div>
+                            )}
+                        />
+
+                        {mode === 'signup' && (
+                            <form.AppField
+                                name="confirmPassword"
+                                children={(field) => (
+                                    <field.InputField
+                                        label="Confirmar senha"
+                                        type="password"
+                                        icon={Lock}
+                                        placeholder="••••••••"
+                                        className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                                        required
+                                    />
+                                )}
+                            />
                         )}
 
                         <Button 
                             type="submit" 
-                            className="w-full h-12 text-base font-bold mt-8 rounded-xl transition-all active:scale-[0.98]"
+                            className="w-full h-12 text-base font-bold mt-8 rounded-xl transition-all active:scale-[0.98] bg-[#003153] hover:bg-[#002540] text-white"
                             disabled={loading}
                         >
                             {loading ? (
@@ -303,8 +313,7 @@ export default function AuthPage() {
                                 setMode(mode === 'login' ? 'signup' : 'login');
                                 setError('');
                                 setSuccess(false);
-                                setPassword('');
-                                setConfirmPassword('');
+                                form.reset();
                             }}
                             className="text-primary font-bold hover:underline transition-all"
                         >

@@ -7,13 +7,18 @@ export const { fieldContext, useFieldContext, formContext, useFormContext } =
 
 // Fields
 const InputField = lazy(() => import('@/components/form/input'));
-
+const TextareaField = lazy(() => import('@/components/form/textarea'));
+const MoneyField = lazy(() => import('@/components/form/money'));
+const SelectField = lazy(()=> import('@/components/form/select'))
 
 export const { useAppForm: useForm, withForm } = createFormHook({
   fieldContext,
   formContext,
   fieldComponents: {
     InputField,
+    TextareaField,
+    MoneyField,
+    SelectField
   },
   formComponents: {
   },
