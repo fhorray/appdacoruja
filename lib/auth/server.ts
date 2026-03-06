@@ -16,6 +16,7 @@ function createAuth(env?: CloudflareEnv, cf?: IncomingRequestCfProperties) {
   const db = env ? drizzle(env.DB, { schema, logger: true }) : ({} as any);
 
   return betterAuth({
+     secret: process.env.BETTER_AUTH_SECRET || "BUILD_SECRET_DONT_USE_IN_PROD",
     ...withCloudflare(
       {
         autoDetectIpAddress: !!cf,

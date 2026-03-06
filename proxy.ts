@@ -4,7 +4,6 @@ import { APP_CONFIG } from "./constants";
 import { MAIN_URL, ROUTES } from "./routes";
 
 
-
 // Helper to normalize path and handle trailing slashes
 function normalizePath(pathname: string) {
   // remove trailing slash except when path is root "/"
