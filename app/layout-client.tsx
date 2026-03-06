@@ -175,8 +175,8 @@ export function LayoutClient({ children }: LayoutClientProps) {
         <AppSidebar user={user} handleLogout={handleLogout} pathname={pathname} />
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto pb-20 md:pb-0 scroll-smooth">
-          <div className="container mx-auto max-w-7xl">
+        <main className="flex-1 overflow-y-auto pb-24 md:pb-0 scroll-smooth bg-slate-50 dark:bg-background">
+          <div className="container mx-auto max-w-7xl pt-4 md:pt-8 px-4 sm:px-6 lg:px-8">
             {children}
           </div>
         </main>

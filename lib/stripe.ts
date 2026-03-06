@@ -33,7 +33,7 @@ export const getProductById = (id: string): StripeProduct | undefined => {
 };
 
 
-export const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY! || "", {
+export const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY! || "sk_test_123", {
   apiVersion: "2026-02-25.clover",
   typescript: true,
   httpClient: Stripe.createFetchHttpClient()

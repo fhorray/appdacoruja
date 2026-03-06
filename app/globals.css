@@ -44,10 +44,10 @@
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 0.75rem;
 
   /* Light Mode - Clean & Crisp */
-  --background: oklch(1 0 0);
+  --background: oklch(0.98 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -143,10 +143,18 @@
   }
 
   body {
-    @apply bg-slate-50 text-foreground font-sans;
+    @apply bg-background text-foreground font-sans antialiased;
   }
 }
 
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

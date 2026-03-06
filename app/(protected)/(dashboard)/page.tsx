@@ -8,11 +8,14 @@ import { EmptyState } from '@/components/empty-state';
 import { CategoryChart } from '@/components/finance/category-chart';
 import { MonthComparison } from '@/components/finance/month-comparison';
 import { SubscriptionStatus } from '@/components/finance/subscription-status';
+import { DashboardHeader } from '@/components/finance/dashboard-header';
+import { TransactionListItem } from '@/components/finance/transaction-list-item';
 import { Button } from '@/components/ui/button';
 import { getDashboardDataAction } from "@/server/actions/finance-actions";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function DashboardPage() {
+    const { user } = useAuth();
     const [data, setData] = useState<any>(null);
     const [isPrivate, setIsPrivate] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -52,52 +55,19 @@ export default function DashboardPage() {
     if (!data) return null;
 
     return (
-    <div className="space-y-6 animate-in fade-in-50 duration-500">
+    <div className="space-y-6 animate-in fade-in-50 duration-500 pb-10">
       <SubscriptionStatus />
       
-      <PageHeader 
-        title="Dashboard" 
-        actions={
-          <Button
-            variant="outline"
-            onClick={() => setIsPrivate(!isPrivate)}
-            className="w-full sm:w-auto"
-            title={isPrivate ? "Mostrar valores" : "Ocultar valores"}
-          >
-            {isPrivate ? (
-              <>
-                <EyeOff className="mr-2 h-4 w-4" />
-                Oculto
-              </>
-            ) : (
-              <>
-                <Eye className="mr-2 h-4 w-4" />
-                Visível
-              </>
-            )}
-          </Button>
-        }
+      <DashboardHeader
+        isPrivate={isPrivate}
+        setIsPrivate={setIsPrivate}
+        saldo={data.saldoMes}
+        receitas={data.totalReceitasMes}
+        despesas={data.totalDespesasMes}
+        formatCurrency={formatCurrency}
       />
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <StatCard
-          title="Despesas do Mês"
-          value={formatCurrency(data.totalDespesasMes)}
-          icon={TrendingDown}
-          trend="negative"
-        />
-        <StatCard
-          title="Receitas do Mês"
-          value={formatCurrency(data.totalReceitasMes)}
-          icon={TrendingUp}
-          trend="positive"
-        />
-        <StatCard
-          title="Saldo do Mês"
-          value={formatCurrency(data.saldoMes)}
-          icon={Wallet}
-          trend={data.saldoMes >= 0 ? 'positive' : 'negative'}
-        />
+      <div className="grid grid-cols-2 gap-4">
         <StatCard
           title="Saldo Anual"
           value={formatCurrency(data.saldoAnual)}
@@ -138,39 +108,18 @@ export default function DashboardPage() {
         isPrivate={isPrivate}
       />
 
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold tracking-tight">Últimas Transações</h3>
+      <div className="space-y-4 mt-8">
+        <h3 className="text-lg font-semibold tracking-tight px-1">Últimas Transações</h3>
         {data.ultimasTransacoes.length > 0 ? (
-          <div className="rounded-md border bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Descrição</TableHead>
-                  <TableHead className="hidden sm:table-cell">Categoria</TableHead>
-                  <TableHead className="text-right">Valor</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.ultimasTransacoes.map((t: any) => (
-                  <TableRow key={t.id}>
-                    <TableCell className="font-medium">
-                      {(() => {
-                        const [year, month, day] = t.data.split('-').map(Number);
-                        return new Date(year, month - 1, day).toLocaleDateString('pt-BR');
-                      })()}
-                    </TableCell>
-                    <TableCell>{t.descricao}</TableCell>
-                    <TableCell className="hidden sm:table-cell text-muted-foreground">{t.categoria}</TableCell>
-                    <TableCell className={`text-right font-medium ${
-                      t.tipo === 'receita' ? 'text-emerald-600' : 'text-red-600'
-                    }`}>
-                      {t.tipo === 'receita' ? '+' : '-'} {formatCurrency(Number(t.valor))}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <div className="flex flex-col gap-3">
+            {data.ultimasTransacoes.map((t: any) => (
+              <TransactionListItem
+                key={t.id}
+                transaction={t}
+                formatCurrency={formatCurrency}
+                userId={user?.id as string}
+              />
+            ))}
           </div>
         ) : (
           <EmptyState 

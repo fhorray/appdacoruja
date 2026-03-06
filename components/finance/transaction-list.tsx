@@ -1,9 +1,12 @@
-import { Pencil, Trash2, ReceiptText } from 'lucide-react';
+"use client";
+
+import { EmptyState } from '@/components/empty-state';
+import { ReceiptText, Trash2, Pencil } from 'lucide-react';
+import { TransactionListItem } from './transaction-list-item';
 import { transactions } from '@/server/database/schemas/finance';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/empty-state';
 import { TransactionFormModal } from './transaction-form-modal';
 
 type Transaction = typeof transactions.$inferSelect;
@@ -22,8 +25,14 @@ export function TransactionList({ transactions, userId, onDelete }: TransactionL
     }).format(Number(value));
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+  const formatDate = (dateString: Date | string) => {
+    try {
+      // Handle both formats
+      const d = new Date(dateString + (typeof dateString === 'string' && !dateString.includes('T') ? "T12:00:00" : ""));
+      return d.toLocaleDateString('pt-BR');
+    } catch {
+      return String(dateString);
+    }
   };
 
   if (transactions.length === 0) {
@@ -37,56 +46,37 @@ export function TransactionList({ transactions, userId, onDelete }: TransactionL
   }
 
   return (
-    <div className="bg-card rounded-xl shadow-sm border overflow-hidden">
+    <div className="pb-8">
       {/* Mobile View */}
-      <div className="md:hidden divide-y">
+      <div className="md:hidden flex flex-col gap-3">
         {transactions.map((transaction) => (
-          <div key={transaction.id} className="p-4 hover:bg-muted/50 transition-colors">
-            <div className="flex justify-between items-start mb-2">
-              <div className="pr-2">
-                <p className="text-sm font-semibold text-foreground">{transaction.description}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-muted-foreground">{formatDate(new Date(transaction.date))}</span>
-                  <span className="text-xs text-border">•</span>
-                  <span className="text-xs text-muted-foreground truncate max-w-[100px]">{transaction.category}</span>
-                </div>
-              </div>
-              <div className="text-right flex-shrink-0 flex flex-col items-end">
-                <p className={`text-sm font-bold ${transaction.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {transaction.type === 'income' ? '+' : '-'} {formatCurrency(transaction.amount)}
-                </p>
-                <Badge variant={transaction.status === 'paid' ? 'default' : 'secondary'} className="mt-1 text-[10px] h-4 px-1.5 font-normal">
-                  {transaction.status === 'paid' ? 'Pago' : 'Pendente'}
-                </Badge>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 mt-3 pt-3 border-t">
-              <TransactionFormModal mode="edit" initialData={transaction} userId={userId}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950"
-                  title="Editar"
-                >
-                  <Pencil className="w-4 h-4" />
-                </Button>
-              </TransactionFormModal>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onDelete(transaction.id)}
-                className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+          <div key={transaction.id} className="relative group/wrapper flex items-center gap-2">
+             <div className="flex-1 min-w-0">
+               <TransactionListItem
+                  transaction={transaction}
+                  formatCurrency={formatCurrency}
+                  userId={userId}
+                />
+             </div>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if(confirm('Tem certeza que deseja excluir esta transação?')) {
+                    onDelete(transaction.id);
+                  }
+                }}
+                className="p-3 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-2xl transition-colors shrink-0"
                 title="Excluir"
               >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
+                <Trash2 className="w-5 h-5" />
+              </button>
           </div>
         ))}
       </div>
 
       {/* Desktop View */}
-      <div className="hidden md:block overflow-x-auto">
+      <div className="hidden md:block overflow-x-auto bg-card rounded-xl shadow-sm border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -104,22 +94,24 @@ export function TransactionList({ transactions, userId, onDelete }: TransactionL
             {transactions.map((transaction) => (
               <TableRow key={transaction.id}>
                 <TableCell className="text-muted-foreground whitespace-nowrap">
-                  {formatDate(new Date(transaction.date))}
+                  {formatDate(transaction.date || (transaction as any).data)}
                 </TableCell>
                 <TableCell className="font-medium text-foreground">
-                  {transaction.description}
+                  {transaction.description || (transaction as any).descricao}
                 </TableCell>
-                <TableCell className="text-muted-foreground">{transaction.category}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  {transaction.category || (transaction as any).categoria}
+                </TableCell>
                 <TableCell className="text-muted-foreground">
                   {transaction.responsible || '-'}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={transaction.type === 'income' ? 'outline' : 'outline'} className={
-                    transaction.type === 'income' 
+                  <Badge variant="outline" className={
+                    (transaction.type === 'income' || (transaction as any).tipo === 'receita')
                       ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 font-normal'
                       : 'border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950/50 dark:text-red-400 font-normal'
                   }>
-                    {transaction.type === 'income' ? 'Receita' : 'Despesa'}
+                    {(transaction.type === 'income' || (transaction as any).tipo === 'receita') ? 'Receita' : 'Despesa'}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -129,11 +121,11 @@ export function TransactionList({ transactions, userId, onDelete }: TransactionL
                 </TableCell>
                 <TableCell
                   className={`text-right font-medium whitespace-nowrap ${
-                    transaction.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                    (transaction.type === 'income' || (transaction as any).tipo === 'receita') ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
                   }`}
                 >
-                  {transaction.type === 'income' ? '+' : '-'}{' '}
-                  {formatCurrency(transaction.amount)}
+                  {(transaction.type === 'income' || (transaction as any).tipo === 'receita') ? '+' : '-'}{' '}
+                  {formatCurrency(transaction.amount || (transaction as any).valor)}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
@@ -150,7 +142,11 @@ export function TransactionList({ transactions, userId, onDelete }: TransactionL
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => onDelete(transaction.id)}
+                      onClick={() => {
+                        if(confirm('Tem certeza que deseja excluir esta transação?')) {
+                          onDelete(transaction.id);
+                        }
+                      }}
                       className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
                       title="Excluir"
                     >
@@ -162,12 +158,11 @@ export function TransactionList({ transactions, userId, onDelete }: TransactionL
             ))}
           </TableBody>
         </Table>
-      </div>
-
-      <div className="bg-muted/30 px-4 py-3 border-t">
-        <p className="text-sm text-muted-foreground">
-          Total: <span className="font-medium text-foreground">{transactions.length}</span> transações
-        </p>
+        <div className="bg-muted/30 px-4 py-3 border-t">
+          <p className="text-sm text-muted-foreground">
+            Total: <span className="font-medium text-foreground">{transactions.length}</span> transações
+          </p>
+        </div>
       </div>
     </div>
   );
