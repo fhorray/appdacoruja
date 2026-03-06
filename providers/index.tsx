@@ -7,6 +7,7 @@ import React from 'react';
 import { Toaster } from 'sonner';
 import { QueryProvider } from './query-provider';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { AuthGuard } from './auth-guard';
 
 const Providers = ({
   children,
@@ -24,7 +25,9 @@ const Providers = ({
           forcedTheme="light"
           disableTransitionOnChange
         >
-          <TooltipProvider>{children}</TooltipProvider>
+          <AuthGuard>
+            <TooltipProvider>{children}</TooltipProvider>
+          </AuthGuard>
         </ThemeProvider>
         <Toaster />
       </NuqsAdapter>
