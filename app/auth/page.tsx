@@ -43,7 +43,7 @@ export default function AuthPage() {
                     email: value.email,
                     password: value.password,
                     name: value.name,
-                    callbackURL: '/',
+                    callbackURL: '/dashboard',
                 }, {
                     onError: (ctx) => {
                         setError(ctx.error.message || 'Erro ao criar conta.');
@@ -53,7 +53,7 @@ export default function AuthPage() {
                         setSuccess(true);
                         setLoading(false);
                         toast.success('Conta criada com sucesso!');
-                        setTimeout(() => router.push('/'), 2000);
+                        setTimeout(() => router.push('/dashboard'), 2000);
                     },
                 });
             } else {
@@ -61,7 +61,7 @@ export default function AuthPage() {
                     email: value.email,
                     password: value.password,
                     rememberMe: true,
-                    callbackURL: '/',
+                    callbackURL: '/dashboard',
                 }, {
                     onError: (ctx) => {
                         if (ctx.error.message?.includes('Invalid login credentials')) {
@@ -74,7 +74,7 @@ export default function AuthPage() {
                     onSuccess: () => {
                         toast.success('Login realizado!');
                         setLoading(false);
-                        router.push('/');
+                        router.push('/dashboard');
                     }
                 });
             }
@@ -87,7 +87,7 @@ export default function AuthPage() {
         try {
             await login.social({
                 provider,
-                callbackURL: '/',
+                callbackURL: '/dashboard',
             });
         } catch (err) {
             console.error(err);
@@ -106,7 +106,7 @@ export default function AuthPage() {
                         </div>
                         <h1 className="text-3xl font-bold text-foreground mb-4">Conta criada!</h1>
                         <p className="text-muted-foreground mb-8">Você será redirecionado para o seu novo painel em instantes...</p>
-                        <Button onClick={() => router.push('/')} className="w-full h-12 text-lg">
+                        <Button onClick={() => router.push('/dashboard')} className="w-full h-12 text-lg">
                             Acessar Dashboard
                         </Button>
                     </CardContent>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Receipt, TrendingUp, Target, Upload, Settings, Menu, Plus, PiggyBank, Shield, LogOut, MoreHorizontal, CalendarClock } from 'lucide-react';
+import { Home, Receipt, TrendingUp, Target, Upload, Settings, Menu, Plus, PiggyBank, Shield, LogOut, MoreHorizontal, CalendarClock, CreditCard, Scale } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth/client';
@@ -20,7 +20,8 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarHeader
+  SidebarHeader,
+  SidebarTrigger
 } from "@/components/ui/sidebar";
 import Image from 'next/image';
 
@@ -29,12 +30,13 @@ interface LayoutClientProps {
 }
 
 const mainNav = [
-  { name: 'Dashboard', icon: Home, href: '/' },
+  { name: 'Dashboard', icon: Home, href: '/dashboard' },
   { name: 'Transações', icon: Receipt, href: '/transactions' },
+  { name: 'Cartões', icon: CreditCard, href: '/cards' },
   { name: 'Metas (Caixinhas)', icon: Target, href: '/goals' },
   { name: 'Investimentos', icon: PiggyBank, href: '/investments' },
   { name: 'Contas Fixas', icon: CalendarClock, href: '/bills' },
-  { name: 'Limites', icon: Target, href: '/limits' },
+  { name: 'Limites', icon: Scale, href: '/limits' },
 ];
 
 const secondaryNav = [
@@ -49,11 +51,12 @@ const AppSidebar = ({ user, handleLogout, pathname }: { user: any, handleLogout:
   };
 
   return (
-    <Sidebar className="border-r hidden md:flex z-20">
-      <SidebarHeader className="p-4 md:p-3 flex items-center justify-center border-b">
-        <Link href="/" className="hover:opacity-80 transition-opacity">
-          <Image src="/logo-blue-flat.png" alt="App da Coruja" width={160} height={110} className="w-auto" priority />
+    <Sidebar className="border-r hidden md:flex z-20" collapsible='icon'>
+      <SidebarHeader className="p-4 md:p-3 flex items-center justify-between border-b group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-4">
+        <Link href="/" className="hover:opacity-80 transition-opacity group-data-[collapsible=icon]:hidden">
+          <Image src="/logo-blue-flat.png" alt="App da Coruja" width={110} height={110} className="w-auto p-2" priority />
         </Link>
+        <SidebarTrigger />
       </SidebarHeader>
 
       <SidebarContent>
@@ -114,27 +117,28 @@ const AppSidebar = ({ user, handleLogout, pathname }: { user: any, handleLogout:
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t bg-background shrink-0">
+      <SidebarFooter className="p-4 border-t bg-background shrink-0 group-data-[collapsible=icon]:p-2">
         {user && (
           <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-3 px-2">
+            <div className="flex items-center gap-3 px-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center">
               <Avatar className="h-9 w-9 border shrink-0">
                 <AvatarImage src={user.image || ''} />
                 <AvatarFallback className="bg-primary/10 text-primary font-medium">
                   {user.name?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex flex-col min-w-0 pr-2">
+              <div className="flex flex-col min-w-0 pr-2 group-data-[collapsible=icon]:hidden">
                 <span className="text-sm font-medium truncate">{user.name}</span>
                 <span className="text-xs text-muted-foreground truncate">{user.email}</span>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className="flex w-full items-center justify-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-destructive bg-destructive/5 hover:bg-destructive/10 transition-colors cursor-pointer"
+              title="Sair da conta"
+              className="flex w-full items-center justify-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-destructive bg-destructive/5 hover:bg-destructive/10 transition-colors cursor-pointer group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:bg-transparent"
             >
-              <LogOut className="w-4 h-4" />
-              Sair da conta
+              <LogOut className="w-5 h-5 shrink-0" />
+              <span className="group-data-[collapsible=icon]:hidden">Sair da conta</span>
             </button>
           </div>
         )}
@@ -153,21 +157,21 @@ export function LayoutClient({ children }: LayoutClientProps) {
     router.push('/');
   };
 
-  const isAuthPage = pathname === "/auth";
+  const isPublicPage = pathname === "/auth" || pathname === "/";
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
   };
 
-  if (isAuthPage) {
+  if (isPublicPage) {
     return <main className="min-h-screen">{children}</main>;
   }
 
   // For mobile bottom bar (max 4 items + "Menu")
-  const mobileNav = mainNav.slice(0, 3);
+  const mobileNav = mainNav.slice(0, 4);
   const mobileMoreNav = [
-    mainNav[3], // Limites
+    ...mainNav.slice(4),
     ...secondaryNav
   ];
 

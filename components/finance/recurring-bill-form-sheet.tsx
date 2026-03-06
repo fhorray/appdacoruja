@@ -4,7 +4,8 @@ import { useRecurringBills } from "@/hooks/use-recurring-bills";
 import { useFinance } from "@/hooks/use-finance";
 import { CustomSheet } from "@/components/custom-sheet";
 import { Button } from "@/components/ui/button";
-import { CalendarClock, Hash, Palette, Tag, AlignLeft, CalendarDays, AlignLeftIcon } from "lucide-react";
+import { CalendarClock, Hash, Palette, Tag, AlignLeft, CalendarDays, AlignLeftIcon, Target } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { SelectRecurringBill } from "@/server/database/schemas";
 import { toast } from "sonner";
 
@@ -28,10 +29,30 @@ interface RecurringBillFormSheetProps {
 
 export function RecurringBillFormSheet({ isOpen, onClose, userId, initialData }: RecurringBillFormSheetProps) {
   const { createRecurringBill, updateRecurringBill } = useRecurringBills(userId);
-  const { categoriesQuery } = useFinance(userId);
+  const { categoriesQuery, createCategory } = useFinance(userId);
   const isEditing = !!initialData;
 
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+
   const categories = categoriesQuery.data?.filter(c => c.isActive && c.type === 'expense') || [];
+
+  async function handleAddCategory() {
+    if (!newCategoryName.trim()) return;
+    try {
+      await createCategory.mutateAsync({
+        name: newCategoryName.trim(),
+        type: 'expense',
+        userId
+      });
+      form.setFieldValue('category', newCategoryName.trim());
+      setNewCategoryName("");
+      setShowNewCategory(false);
+      toast.success("Categoria criada com sucesso!");
+    } catch (error) {
+      toast.error("Erro ao criar categoria");
+    }
+  }
 
   const form = useForm({
     defaultValues: {
@@ -144,11 +165,31 @@ export function RecurringBillFormSheet({ isOpen, onClose, userId, initialData }:
                     children={(field) => (
                     <field.SelectField
                         label="Categoria"
-                        options={categories.map(c => ({ value: c.name, label: c.name }))}
+                        options={[
+                          ...categories.map(c => ({ value: c.name, label: c.name })),
+                          { value: "__new__", label: "+ Nova Categoria" }
+                        ]}
+                        onValueChange={(v) => {
+                          if (v === '__new__') setShowNewCategory(true);
+                          else field.handleChange(v);
+                        }}
                         className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
                     />
                     )}
                 />
+                {showNewCategory && (
+                  <div className="col-span-2 mt-2 flex gap-2 animate-in slide-in-from-top-2">
+                    <Input
+                      type="text"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      placeholder="Nome da categoria"
+                      className="flex-1 h-10 border-none bg-muted/50 rounded-xl"
+                    />
+                    <Button type="button" onClick={handleAddCategory} className="bg-emerald-600 hover:bg-emerald-700 text-white h-10 rounded-xl">OK</Button>
+                    <Button type="button" variant="ghost" onClick={() => setShowNewCategory(false)} className="h-10 px-3 rounded-xl">✕</Button>
+                  </div>
+                )}
 
                 <form.AppField
                     name="dueDay"

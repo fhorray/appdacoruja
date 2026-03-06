@@ -12,19 +12,14 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PageHeader } from '@/components/page-header';
+import { LoadingScreen } from '@/components/loading-screen';
 
 export default function SettingsPage() {
     const router = useRouter();
     const { user } = useAuth();
-    
-    // Fallback if useAuth is still loading
     const currentUser = user;
 
-    if (!currentUser) {
-        return <span>Loading...</span>;
-    }
-
-    const [name, setName] = useState(currentUser.name);
+    const [name, setName] = useState(currentUser?.name || '');
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [isSavingProfile, setIsSavingProfile] = useState(false);
@@ -72,17 +67,13 @@ export default function SettingsPage() {
     };
 
     // Get initials for avatar
-    const getInitials = (name: string) => {
-        if (!name) return 'U';
-        return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    const getInitials = (userName: string | null | undefined) => {
+        if (!userName) return 'U';
+        return userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     };
 
-    if (!user) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-        );
+    if (!currentUser) {
+        return <LoadingScreen />;
     }
 
     return (

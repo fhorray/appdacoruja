@@ -130,7 +130,7 @@ export function SavingsGoalDepositSheet({ isOpen, onClose, userId, goal, initial
           <Button 
             type="submit" 
             form="savings-deposit-form" 
-            className="w-full"
+            className=""
             disabled={updateGoalAmount.isPending}
           >
             {updateGoalAmount.isPending ? "Processando..." : "Confirmar"}

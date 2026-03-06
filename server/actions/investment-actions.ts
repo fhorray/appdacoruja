@@ -1,16 +1,23 @@
-"use server";
-
 import { db } from "../database/client";
 import { retirementConfigs, financialProjects } from "../database/schemas/investments";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { getAuthSession } from "@/lib/auth/server";
+
+// --- Helper ---
+async function getUser() {
+  const { user } = await getAuthSession();
+  if (!user) throw new Error("Unauthorized");
+  return user;
+}
 
 // --- Retirement Configs Actions ---
 
-export async function getRetirementConfigAction(userId: string) {
+export async function getRetirementConfigAction() {
   try {
+    const user = await getUser();
     const database = await db();
-    const [config] = await database.select().from(retirementConfigs).where(eq(retirementConfigs.userId, userId)).limit(1);
+    const [config] = await database.select().from(retirementConfigs).where(eq(retirementConfigs.userId, user.id)).limit(1);
     return config;
   } catch (error) {
     console.error("Failed to fetch retirement config:", error);
@@ -18,12 +25,13 @@ export async function getRetirementConfigAction(userId: string) {
   }
 }
 
-export async function upsertRetirementConfigAction({ userId, data }: { userId: string, data: Partial<typeof retirementConfigs.$inferInsert> }) {
+export async function upsertRetirementConfigAction(data: Partial<typeof retirementConfigs.$inferInsert>) {
   try {
+    const user = await getUser();
     const database = await db();
     const [result] = await database
       .insert(retirementConfigs)
-      .values({ ...data, userId })
+      .values({ ...data, userId: user.id })
       .onConflictDoUpdate({
         target: retirementConfigs.userId,
         set: data
@@ -39,20 +47,25 @@ export async function upsertRetirementConfigAction({ userId, data }: { userId: s
 
 // --- Financial Projects Actions ---
 
-export async function getFinancialProjectsAction(userId: string) {
+export async function getFinancialProjectsAction() {
   try {
+    const user = await getUser();
     const database = await db();
-    return await database.select().from(financialProjects).where(eq(financialProjects.userId, userId));
+    return await database.select().from(financialProjects).where(eq(financialProjects.userId, user.id));
   } catch (error) {
     console.error("Failed to fetch financial projects:", error);
     throw new Error("Failed to fetch financial projects");
   }
 }
 
-export async function createFinancialProjectAction(data: typeof financialProjects.$inferInsert) {
+export async function createFinancialProjectAction(data: Omit<typeof financialProjects.$inferInsert, "userId">) {
   try {
+    const user = await getUser();
     const database = await db();
-    const [result] = await database.insert(financialProjects).values(data).returning();
+    const [result] = await database.insert(financialProjects).values({
+        ...data,
+        userId: user.id
+    }).returning();
     revalidatePath("/investments");
     return result;
   } catch (error) {
@@ -63,8 +76,12 @@ export async function createFinancialProjectAction(data: typeof financialProject
 
 export async function updateFinancialProjectAction({ id, data }: { id: string, data: Partial<typeof financialProjects.$inferInsert> }) {
   try {
+    const user = await getUser();
     const database = await db();
-    const [result] = await database.update(financialProjects).set(data).where(eq(financialProjects.id, id)).returning();
+    const [result] = await database.update(financialProjects)
+        .set(data)
+        .where(and(eq(financialProjects.id, id), eq(financialProjects.userId, user.id)))
+        .returning();
     revalidatePath("/investments");
     return result;
   } catch (error) {
@@ -75,8 +92,9 @@ export async function updateFinancialProjectAction({ id, data }: { id: string, d
 
 export async function deleteFinancialProjectAction(id: string) {
   try {
+    const user = await getUser();
     const database = await db();
-    await database.delete(financialProjects).where(eq(financialProjects.id, id));
+    await database.delete(financialProjects).where(and(eq(financialProjects.id, id), eq(financialProjects.userId, user.id)));
     revalidatePath("/investments");
   } catch (error) {
     console.error("Failed to delete financial project:", error);
