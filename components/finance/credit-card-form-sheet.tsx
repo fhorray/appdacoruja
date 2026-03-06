@@ -57,11 +57,11 @@ function CreditCardFormContent({ initialData, mode, close }: { initialData: any,
       color: initialData?.color || '#3b82f6',
       lastFourDigits: initialData?.lastFourDigits || '',
     },
-    onSubmit: async (values) => {
+    onSubmit: async ({ value }) => {
       if (mode === 'create') {
-        await createCreditCard.mutateAsync(values as any);
+        await createCreditCard.mutateAsync(value as any);
       } else {
-        await updateCreditCard.mutateAsync({ id: initialData.id, data: values as any });
+        await updateCreditCard.mutateAsync({ id: initialData.id, data: value as any });
       }
       close();
     }
