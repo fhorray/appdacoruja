@@ -1,3 +1,5 @@
+import Stripe from "stripe";
+
 export interface StripeProduct {
   id: string;
   priceId: string;
@@ -29,3 +31,10 @@ export const getProductByPriceId = (priceId: string): StripeProduct | undefined 
 export const getProductById = (id: string): StripeProduct | undefined => {
   return STRIPE_PRODUCTS.find(product => product.id === id);
 };
+
+
+export const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY! || "", {
+  apiVersion: "2026-02-25.clover",
+  typescript: true,
+  httpClient: Stripe.createFetchHttpClient()
+});

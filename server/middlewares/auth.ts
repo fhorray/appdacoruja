@@ -1,7 +1,8 @@
-import { auth } from "@/lib/auth/server";
+import { initAuth } from "@/lib/auth/server";
 import { Context, Next } from "hono";
 
 export default async function authMiddleware(c: Context, next: Next) {
+  const auth = await initAuth();
   const session = await auth.api.getSession({
     headers: c.req.raw.headers
   });

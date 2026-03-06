@@ -7,10 +7,13 @@ dotenv.config({
 })
 
 export default defineConfig({
-  dialect: "postgresql",
+  dialect: "sqlite",
+  driver: "d1-http",
   out: "./server/database/migrations",
   schema: "./server/database/schemas/index.ts",
   dbCredentials: {
-    url: process.env.DATABASE_URL!,
+    databaseId: "4678471a-f8e1-4f6b-90cf-99f5597e8c6c",
+    accountId: process.env.CLOUDFLARE_ACCOUNT_ID!,
+    token: process.env.CLOUDFLARE_D1_TOKEN!,
   },
 });

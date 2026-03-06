@@ -1,23 +1,112 @@
-"use server";
+"use client";
 
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth/server";
-import { redirect } from "next/navigation";
-import { getTransactionsAction } from "@/server/actions/finance-actions";
-import { TransactionsClient } from "./transactions-client";
+import { useState, Suspense } from 'react';
+import { Plus } from 'lucide-react';
+import { TransactionFilters } from '@/components/finance/transaction-filters';
+import { TransactionList } from '@/components/finance/transaction-list';
+import { TransactionFormModal } from '@/components/finance/transaction-form-modal';
+import { useFinance } from '@/hooks/use-finance';
+import { useAuth } from '@/hooks/use-auth';
+import { PageHeader } from '@/components/page-header';
+import { Button } from '@/components/ui/button';
+import { useQueryState } from 'nuqs';
 
-export default async function TransactionsPage() {
-    const session = await auth.api.getSession({
-        headers: await headers()
+function TransactionsContent() {
+  const { user } = useAuth();
+  const userId = user?.id as string;
+  const { transactionsQuery, deleteTransaction } = useFinance(userId || "");
+  const transactions = transactionsQuery.data || [];
+
+  const [month, setMonth] = useQueryState('month', { defaultValue: '' });
+  const [category, setCategory] = useQueryState('category', { defaultValue: '' });
+  const [type, setType] = useQueryState('type', { defaultValue: '' });
+  const [status, setStatus] = useQueryState('status', { defaultValue: '' });
+  const [responsible, setResponsible] = useQueryState('responsible', { defaultValue: '' });
+
+  const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [editingTransaction, setEditingTransaction] = useState<any>(null);
+
+  const applyFilters = (txs: any[]) => {
+    return txs.filter(t => {
+       if (month && t.month !== month) return false;
+       if (category && t.category !== category) return false;
+       if (type && t.type !== type) return false;
+       if (status && t.status !== status) return false;
+       if (responsible && t.responsible !== responsible) return false;
+       return true;
     });
+  };
 
-    if (!session?.user) {
-        redirect("/login");
-    }
+  const filteredTransactions = applyFilters(transactions);
 
-    // You could fetch initial filters here if user persisted preferences,
-    // otherwise fetch recent transactions.
-    const initialTransactions = await getTransactionsAction();
+  const handleEdit = (transaction: any) => {
+    // editing handled via Trigger buttons per row
+  };
 
-    return <TransactionsClient initialTransactions={initialTransactions} userId={session.user.id} />;
+  const handleDelete = async (id: string) => {
+      if(!confirm('Tem certeza?')) return;
+      await deleteTransaction.mutateAsync(id);
+  };
+
+  const filters = { month, category, type, status, responsible };
+
+  const handleFilterChange = (key: string, value: string) => {
+      const emptyValue = value === "all" ? "" : value;
+      switch (key) {
+        case 'month': setMonth(emptyValue || null); break;
+        case 'category': setCategory(emptyValue || null); break;
+        case 'type': setType(emptyValue || null); break;
+        case 'status': setStatus(emptyValue || null); break;
+        case 'responsible': setResponsible(emptyValue || null); break;
+      }
+  };
+
+  const handleClearFilters = () => {
+    setMonth(null);
+    setCategory(null);
+    setType(null);
+    setStatus(null);
+    setResponsible(null);
+  };
+
+  return (
+    <div className="space-y-6 animate-in fade-in-50 duration-500">
+      <PageHeader
+        title="Transações"
+        actions={
+          <TransactionFormModal mode="create" userId={userId}>
+            <Button className="w-full sm:w-auto">
+              <Plus className="mr-2 h-4 w-4" />
+              Nova Transação
+            </Button>
+          </TransactionFormModal>
+        }
+      />
+
+      <TransactionFilters
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onClearFilters={handleClearFilters}
+      />
+
+      <TransactionList
+        transactions={filteredTransactions}
+        userId={userId}
+        onDelete={handleDelete}
+      />
+    </div>
+  );
+}
+
+export default function TransactionsPage() {
+  return (
+    <Suspense fallback={
+        <div className="flex h-[50vh] items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+    }>
+        <TransactionsContent />
+    </Suspense>
+  );
 }

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Crown, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 import { getUserSubscriptionAction } from '@/server/actions/payment-actions';
 
 // We can accept subscription as prop (SSR) or fetch it (CSR).
@@ -69,12 +70,12 @@ export function SubscriptionStatus() {
         </div>
 
         {!isActive && (
-          <button
+          <Button
             onClick={() => router.push('/plans')}
-            className="px-6 py-3 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:scale-105"
+            className="px-6 h-11 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all"
           >
             Fazer Upgrade
-          </button>
+          </Button>
         )}
       </div>
     </div>

@@ -29,4 +29,11 @@
     //   "bucket_name": "<BUCKET_NAME>",
     // },
   ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "appdacoruja",
+      "database_id": "4678471a-f8e1-4f6b-90cf-99f5597e8c6c"
+    }
+  ]
 }

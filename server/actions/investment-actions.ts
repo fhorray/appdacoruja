@@ -9,7 +9,8 @@ import { revalidatePath } from "next/cache";
 
 export async function getRetirementConfigAction(userId: string) {
   try {
-    const [config] = await db.select().from(retirementConfigs).where(eq(retirementConfigs.userId, userId)).limit(1);
+    const database = await db();
+    const [config] = await database.select().from(retirementConfigs).where(eq(retirementConfigs.userId, userId)).limit(1);
     return config;
   } catch (error) {
     console.error("Failed to fetch retirement config:", error);
@@ -19,9 +20,10 @@ export async function getRetirementConfigAction(userId: string) {
 
 export async function upsertRetirementConfigAction({ userId, data }: { userId: string, data: Partial<typeof retirementConfigs.$inferInsert> }) {
   try {
-    const [result] = await db
+    const database = await db();
+    const [result] = await database
       .insert(retirementConfigs)
-      .values({ ...data, userId } as any)
+      .values({ ...data, userId })
       .onConflictDoUpdate({
         target: retirementConfigs.userId,
         set: data
@@ -39,7 +41,8 @@ export async function upsertRetirementConfigAction({ userId, data }: { userId: s
 
 export async function getFinancialProjectsAction(userId: string) {
   try {
-    return await db.select().from(financialProjects).where(eq(financialProjects.userId, userId));
+    const database = await db();
+    return await database.select().from(financialProjects).where(eq(financialProjects.userId, userId));
   } catch (error) {
     console.error("Failed to fetch financial projects:", error);
     throw new Error("Failed to fetch financial projects");
@@ -48,7 +51,8 @@ export async function getFinancialProjectsAction(userId: string) {
 
 export async function createFinancialProjectAction(data: typeof financialProjects.$inferInsert) {
   try {
-    const [result] = await db.insert(financialProjects).values(data).returning();
+    const database = await db();
+    const [result] = await database.insert(financialProjects).values(data).returning();
     revalidatePath("/investments");
     return result;
   } catch (error) {
@@ -59,7 +63,8 @@ export async function createFinancialProjectAction(data: typeof financialProject
 
 export async function updateFinancialProjectAction({ id, data }: { id: string, data: Partial<typeof financialProjects.$inferInsert> }) {
   try {
-    const [result] = await db.update(financialProjects).set(data).where(eq(financialProjects.id, id)).returning();
+    const database = await db();
+    const [result] = await database.update(financialProjects).set(data).where(eq(financialProjects.id, id)).returning();
     revalidatePath("/investments");
     return result;
   } catch (error) {
@@ -70,7 +75,8 @@ export async function updateFinancialProjectAction({ id, data }: { id: string, d
 
 export async function deleteFinancialProjectAction(id: string) {
   try {
-    await db.delete(financialProjects).where(eq(financialProjects.id, id));
+    const database = await db();
+    await database.delete(financialProjects).where(eq(financialProjects.id, id));
     revalidatePath("/investments");
   } catch (error) {
     console.error("Failed to delete financial project:", error);

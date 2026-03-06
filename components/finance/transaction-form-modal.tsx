@@ -1,20 +1,37 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { X, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { useFinance } from '@/hooks/use-finance';
-import { authClient } from '@/lib/auth/client';
 import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { CustomSheet } from '../custom-sheet';
+import { Button } from '../ui/button';
 
 interface TransactionFormModalProps {
+  children?: React.ReactNode;
   initialData?: any;
   mode: 'create' | 'edit';
-  onClose: () => void;
-  onSave: () => void;
   userId: string;
 }
 
-export function TransactionFormModal({ initialData, mode, onClose, onSave, userId }: TransactionFormModalProps) {
+export function TransactionFormModal({ children, initialData, mode, userId }: TransactionFormModalProps) {
+  return (
+    <CustomSheet
+      title={mode === 'create' ? 'Nova Transação' : 'Editar Transação'}
+      side="right"
+      className="w-full sm:max-w-md overflow-y-auto"
+      content={({ close }) => (
+        <TransactionFormContent initialData={initialData} mode={mode} userId={userId} close={close} />
+      )}
+    >
+      {children}
+    </CustomSheet>
+  );
+}
+
+function TransactionFormContent({ initialData, mode, userId, close }: { initialData: any, mode: 'create'|'edit', userId: string, close: () => void }) {
   const {
     categoriesQuery,
     responsiblePersonsQuery,
@@ -53,7 +70,6 @@ export function TransactionFormModal({ initialData, mode, onClose, onSave, userI
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newResponsavelName, setNewResponsavelName] = useState('');
 
-  const PAYMENT_METHODS = ['Pix', 'Boleto', 'Cartão de Crédito', 'Dinheiro'];
   const STATUS_OPTIONS = [
     { label: 'Pago', value: 'paid' },
     { label: 'Em Aberto', value: 'pending' }
@@ -72,14 +88,14 @@ export function TransactionFormModal({ initialData, mode, onClose, onSave, userI
     try {
       await createCategory.mutateAsync({
         name: newCategoryName.trim(),
-        type: formData.type,
+        type: formData.type as 'expense' | 'income',
         userId: userId,
         isActive: true
       });
       setFormData({ ...formData, category: newCategoryName.trim() });
       setNewCategoryName('');
       setShowNewCategory(false);
-    } catch (error) {
+    } catch {
       alert('Erro ao adicionar categoria.');
     }
   }
@@ -95,14 +111,13 @@ export function TransactionFormModal({ initialData, mode, onClose, onSave, userI
       setFormData({ ...formData, responsible: newResponsavelName.trim() });
       setNewResponsavelName('');
       setShowNewResponsavel(false);
-    } catch (error) {
+    } catch {
       alert('Erro ao adicionar responsável.');
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!userId) return;
+  async function handleSubmit() {
+    if (!userId || !formData.amount || !formData.description || !formData.category) return;
 
     try {
       const [yearStr, monthStr] = formData.date.split('-');
@@ -127,34 +142,14 @@ export function TransactionFormModal({ initialData, mode, onClose, onSave, userI
       };
 
       if (mode === 'create') {
-        if (formData.isRecurrent && formData.recurrenceType === 'monthly_until_december') {
-          // Handle bulk creation logic similar to quick-add if needed, or simplified here.
-          // For simplicity, I'll pass data to backend action if backend handled bulk, 
-          // but currently client handles loop.
-          // I'll copy loop logic from quick-add if recurrency is needed.
-          // Reusing loop logic:
-          const recurrenceGroup = crypto.randomUUID();
-          const numMonths = formData.recurrenceMonths ? parseInt(formData.recurrenceMonths) : null;
-          let currentDate = new Date(formData.date);
-          let monthCount = 0;
-          // logic ...
-          // FOR NOW, to save space, I will just create SINGLE transaction unless explicitly recurrent logic is copied fully.
-          // I'll just do single save for simplicity in this artifact, but note the complexity.
-          // Wait, recurrence is a feature. I should implement it.
-          // I'll assume server action can handles simpler single insert for now or copy paste logic.
-          // I will implement standard single insert/update to ensure basic functionality first.
-          await createTransaction.mutateAsync(baseTransactionData);
-        } else {
-          await createTransaction.mutateAsync(baseTransactionData);
-        }
+        await createTransaction.mutateAsync(baseTransactionData as any);
       } else {
         await updateTransaction.mutateAsync({
           id: formData.id,
           ...baseTransactionData
-        });
+        } as any);
       }
-
-      onSave();
+      close();
     } catch (error) {
       console.error('Error saving transaction:', error);
       alert('Erro ao salvar transação');
@@ -164,167 +159,150 @@ export function TransactionFormModal({ initialData, mode, onClose, onSave, userI
   const isSaving = createTransaction.isPending || updateTransaction.isPending;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-          <h3 className="text-xl font-bold text-gray-900">
-            {mode === 'create' ? 'Nova Transação' : 'Editar Transação'}
-          </h3>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
-        </div>
+    <div className="flex flex-col gap-4 mt-2">
+      <div className="grid grid-cols-2 gap-2 mb-2">
+        <Button
+          type="button"
+          variant={formData.type === 'expense' ? 'default' : 'outline'}
+          onClick={() => setFormData({ ...formData, type: 'expense', category: '' })}
+          className={formData.type === 'expense' ? 'bg-red-600 hover:bg-red-700 text-white' : ''}
+        >
+          Despesa
+        </Button>
+        <Button
+          type="button"
+          variant={formData.type === 'income' ? 'default' : 'outline'}
+          onClick={() => setFormData({ ...formData, type: 'income', category: '' })}
+          className={formData.type === 'income' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''}
+        >
+          Receita
+        </Button>
+      </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-2 mb-4">
-            <button
-              type="button"
-              onClick={() => setFormData({ ...formData, type: 'expense', category: '' })}
-              className={`py-3 px-4 rounded-lg font-medium transition-all shadow-sm ${formData.type === 'expense'
-                ? 'bg-red-600 text-white shadow'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow'
-                }`}
-            >
-              Despesa
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormData({ ...formData, type: 'income', category: '' })}
-              className={`py-3 px-4 rounded-lg font-medium transition-all shadow-sm ${formData.type === 'income'
-                ? 'bg-green-600 text-white shadow'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow'
-                }`}
-            >
-              Receita
-            </button>
-          </div>
+      <div className="space-y-1.5">
+        <Label>Valor *</Label>
+        <Input
+          type="number"
+          step="0.01"
+          value={formData.amount}
+          onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+          className="text-lg"
+          required
+        />
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Valor</label>
-            <Input
-              type="number"
-              step="0.01"
-              value={formData.amount}
-              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
-              required
-            />
-          </div>
+      <div className="space-y-1.5">
+        <Label>Descrição *</Label>
+        <Input
+          type="text"
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          required
+        />
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+      <div className="space-y-1.5">
+        <Label>Categoria *</Label>
+        <Select 
+          value={formData.category} 
+          onValueChange={(v) => {
+            if (v === '__new__') setShowNewCategory(true);
+            else setFormData({ ...formData, category: v });
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione" />
+          </SelectTrigger>
+          <SelectContent>
+            {filteredCategories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
+            <SelectItem value="__new__">+ Nova Categoria</SelectItem>
+          </SelectContent>
+        </Select>
+        {showNewCategory && (
+          <div className="mt-2 flex gap-2 animate-in fade-in zoom-in-95">
             <Input
               type="text"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              placeholder="Nome"
+              className="flex-1"
             />
+            <Button type="button" onClick={handleAddCategory} className="bg-emerald-600 hover:bg-emerald-700 text-white">OK</Button>
+            <Button type="button" variant="outline" onClick={() => setShowNewCategory(false)}>✕</Button>
           </div>
+        )}
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-            <select
-              value={formData.category}
-              onChange={(e) => {
-                if (e.target.value === '__new__') setShowNewCategory(true);
-                else setFormData({ ...formData, category: e.target.value });
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            >
-              <option value="">Selecione</option>
-              {filteredCategories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-              <option value="__new__">+ Nova Categoria</option>
-            </select>
-            {showNewCategory && (
-              <div className="mt-2 flex gap-2">
-                <Input
-                  type="text"
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  placeholder="Nome da categoria"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-                />
-                <button type="button" onClick={handleAddCategory} className="px-3 py-2 bg-green-600 text-white rounded-lg">OK</button>
-                <button type="button" onClick={() => setShowNewCategory(false)} className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg">✕</button>
-              </div>
-            )}
-          </div>
+      <div className="space-y-1.5">
+        <Label>Data *</Label>
+        <Input
+          type="date"
+          value={formData.date}
+          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+          required
+        />
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Data</label>
-            <Input
-              type="date"
-              value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-          </div>
+      <div className="space-y-1.5">
+        <Label>Status *</Label>
+        <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v })}>
+          <SelectTrigger>
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            {STATUS_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-            >
-              {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-            </select>
-          </div>
-
-          {formData.type === 'expense' && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Responsável</label>
-                <select
-                  value={formData.responsible}
-                  onChange={(e) => {
-                    if (e.target.value === '__new__') setShowNewResponsavel(true);
-                    else setFormData({ ...formData, responsible: e.target.value });
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                >
-                  <option value="">Selecione</option>
-                  {activeResponsiblePersons.map(r => <option key={r.id} value={r.name}>{r.name}</option>)}
-                  <option value="__new__">+ Novo</option>
-                </select>
-                {showNewResponsavel && (
-                  <div className="mt-2 flex gap-2">
-                    <Input
-                      type="text"
-                      value={newResponsavelName}
-                      onChange={(e) => setNewResponsavelName(e.target.value)}
-                      placeholder="Nome"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-                    />
-                    <button type="button" onClick={handleAddResponsavel} className="px-3 py-2 bg-green-600 text-white rounded-lg">OK</button>
-                    <button type="button" onClick={() => setShowNewResponsavel(false)} className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg">✕</button>
-                  </div>
-                )}
-              </div>
-            </>
+      {formData.type === 'expense' && (
+        <div className="space-y-1.5">
+          <Label>Responsável</Label>
+          <Select 
+            value={formData.responsible || 'none'} 
+            onValueChange={(v) => {
+              if (v === '__new__') setShowNewResponsavel(true);
+              else setFormData({ ...formData, responsible: v === 'none' ? '' : v });
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Nenhum</SelectItem>
+              {activeResponsiblePersons.map(r => <SelectItem key={r.id} value={r.name}>{r.name}</SelectItem>)}
+              <SelectItem value="__new__">+ Novo</SelectItem>
+            </SelectContent>
+          </Select>
+          {showNewResponsavel && (
+            <div className="mt-2 flex gap-2 animate-in fade-in zoom-in-95">
+              <Input
+                type="text"
+                value={newResponsavelName}
+                onChange={(e) => setNewResponsavelName(e.target.value)}
+                placeholder="Nome"
+                className="flex-1"
+              />
+              <Button type="button" onClick={handleAddResponsavel} className="bg-emerald-600 hover:bg-emerald-700 text-white">OK</Button>
+              <Button type="button" variant="outline" onClick={() => setShowNewResponsavel(false)}>✕</Button>
+            </div>
           )}
+        </div>
+      )}
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2.5 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all font-medium"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium disabled:opacity-50 flex items-center gap-2"
-            >
-              {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
-              {isSaving ? 'Salvando...' : 'Salvar'}
-            </button>
-          </div>
-        </form>
+      <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 mt-4 border-t">
+        <Button type="button" variant="outline" onClick={close} className="w-full sm:w-auto">
+          Cancelar
+        </Button>
+        <Button 
+          type="button" 
+          onClick={handleSubmit} 
+          disabled={isSaving || !formData.amount || !formData.description || !formData.category} 
+          className="w-full sm:w-auto"
+        >
+          {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isSaving ? 'Salvando...' : 'Salvar'}
+        </Button>
       </div>
     </div>
   );

@@ -1,17 +1,19 @@
 "use server";
 
 import { headers } from "next/headers";
-import { auth } from "@/lib/auth/server";
+import { auth, initAuth } from "@/lib/auth/server";
 import Stripe from 'stripe';
-import { db } from "@/server/database/client";
+import { db as getDb } from "@/server/database/client";
 import { subscriptions } from "@/server/database/schemas/finance";
 import { eq, desc } from "drizzle-orm";
+import { SelectUser } from "../database/schemas";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2025-01-27.acacia' as any, // Cast to any to avoid TS error if types are missing
 });
 
 export async function createCheckoutSessionAction(priceId: string) {
+  const auth = await initAuth();
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -20,7 +22,7 @@ export async function createCheckoutSessionAction(priceId: string) {
     throw new Error("Usuário não autenticado");
   }
 
-  const user = session.user;
+  const user = session.user as any;
 
   // Create Stripe session
   if (!process.env.STRIPE_SECRET_KEY) {
@@ -57,6 +59,7 @@ export async function createCheckoutSessionAction(priceId: string) {
 }
 
 export async function getUserSubscriptionAction() {
+
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -64,9 +67,12 @@ export async function getUserSubscriptionAction() {
   if (!session?.user) return null;
 
   try {
+    const db = await getDb();
+    const user = session.user as SelectUser;
+    
     const sub = await db.select()
       .from(subscriptions)
-      .where(eq(subscriptions.userId, session.user.id))
+      .where(eq(subscriptions.userId, user.id))
       .orderBy(desc(subscriptions.createdAt))
       .limit(1); // Get latest
 

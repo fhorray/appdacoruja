@@ -1,11 +1,12 @@
 "use server";
 
-import { db } from "@/server/database/client";
+import { db as getDb } from "@/server/database/client";
 import { transactions, categories, responsiblePersons, categoryLimits, transactionTypeEnum } from "@/server/database/schemas/finance";
-import { auth } from "@/lib/auth/server";
+import { initAuth } from "@/lib/auth/server";
 import { headers } from "next/headers";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { SelectUser } from "../database/schemas";
 
 /* Types for filters */
 export interface TransactionFilters {
@@ -19,13 +20,14 @@ export interface TransactionFilters {
 
 /* Helper to get user */
 async function getUser() {
+  const auth = await initAuth();
   const session = await auth.api.getSession({
     headers: await headers(),
   });
   if (!session?.user) {
     throw new Error("Usuário não autenticado");
   }
-  return session.user;
+  return session.user as SelectUser;
 }
 
 // --- Transactions ---
@@ -62,6 +64,7 @@ export async function getTransactionsAction(arg?: string | TransactionFilters) {
     conditions.push(eq(transactions.responsible, filters.responsavel));
   }
 
+  const db = await getDb();
   return db.select()
     .from(transactions)
     .where(and(...conditions))
@@ -70,6 +73,7 @@ export async function getTransactionsAction(arg?: string | TransactionFilters) {
 
 export async function createTransactionAction(data: any) {
   const user = await getUser();
+  const db = await getDb();
 
   try {
     const [newTransaction] = await db.insert(transactions).values({
@@ -92,6 +96,7 @@ export async function updateTransactionAction(data: any) { // Data might be {id,
   // Check use-finance signature. It's `updateTransaction.mutateAsync({ id, ... })` probably.
   // Assuming data has id.
   const user = await getUser();
+  const db = await getDb();
   const { id, ...updateData } = data;
 
   if (!id) throw new Error("ID required");
@@ -116,6 +121,7 @@ export async function updateTransactionAction(data: any) { // Data might be {id,
 
 export async function deleteTransactionAction(id: string) {
   const user = await getUser();
+  const db = await getDb();
 
   try {
     await db.delete(transactions)
@@ -134,11 +140,13 @@ export async function deleteTransactionAction(id: string) {
 
 export async function getCategoriesAction(arg?: string) { // arg was userId
   const user = await getUser();
+  const db = await getDb();
   return db.select().from(categories).where(eq(categories.userId, user.id)).orderBy(categories.name);
 }
 
 export async function createCategoryAction(data: any) {
   const user = await getUser();
+  const db = await getDb();
   try {
     // data might be string (name) or object {name, type...}
     // use-finance passes {name, type, userId...}
@@ -154,6 +162,7 @@ export async function createCategoryAction(data: any) {
 
 export async function updateCategoryAction({ id, data }: { id: string, data: any }) {
   const user = await getUser();
+  const db = await getDb();
   try {
     await db.update(categories).set(data).where(and(eq(categories.id, id), eq(categories.userId, user.id)));
     return { success: true };
@@ -164,6 +173,7 @@ export async function updateCategoryAction({ id, data }: { id: string, data: any
 
 export async function deleteCategoryAction(id: string) {
   const user = await getUser();
+  const db = await getDb();
   try {
     await db.delete(categories).where(and(eq(categories.id, id), eq(categories.userId, user.id)));
     return { success: true };
@@ -176,11 +186,13 @@ export async function deleteCategoryAction(id: string) {
 
 export async function getResponsiblePersonsAction(arg?: string) {
   const user = await getUser();
+  const db = await getDb();
   return db.select().from(responsiblePersons).where(eq(responsiblePersons.userId, user.id)).orderBy(responsiblePersons.name);
 }
 
 export async function createResponsiblePersonAction(data: any) {
   const user = await getUser();
+  const db = await getDb();
   try {
     const values = typeof data === 'string' ? { name: data, userId: user.id } : { ...data, userId: user.id };
     await db.insert(responsiblePersons).values(values);
@@ -192,6 +204,7 @@ export async function createResponsiblePersonAction(data: any) {
 
 export async function updateResponsiblePersonAction({ id, data }: { id: string, data: any }) {
   const user = await getUser();
+  const db = await getDb();
   try {
     await db.update(responsiblePersons).set(data).where(and(eq(responsiblePersons.id, id), eq(responsiblePersons.userId, user.id)));
     return { success: true };
@@ -202,6 +215,7 @@ export async function updateResponsiblePersonAction({ id, data }: { id: string, 
 
 export async function deleteResponsiblePersonAction(id: string) {
   const user = await getUser();
+  const db = await getDb();
   try {
     await db.delete(responsiblePersons).where(and(eq(responsiblePersons.id, id), eq(responsiblePersons.userId, user.id)));
     return { success: true };
@@ -214,11 +228,13 @@ export async function deleteResponsiblePersonAction(id: string) {
 
 export async function getCategoryLimitsAction(arg?: string) {
   const user = await getUser();
+  const db = await getDb();
   return db.select().from(categoryLimits).where(eq(categoryLimits.userId, user.id));
 }
 
 export async function upsertCategoryLimitAction(data: any) {
   const user = await getUser();
+  const db = await getDb();
   try {
     await db.insert(categoryLimits).values({ ...data, userId: user.id })
       .onConflictDoUpdate({
@@ -259,6 +275,7 @@ export async function getDashboardDataAction() {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
   };
 
+  const db = await getDb();
   const allTransactions = await db.select()
     .from(transactions)
     .where(eq(transactions.userId, user.id));

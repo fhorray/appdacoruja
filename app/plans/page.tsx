@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Check, ArrowLeft, Loader2 } from 'lucide-react';
-import { STRIPE_PRODUCTS } from '@/lib/stripe-config';
+import { STRIPE_PRODUCTS } from '@/lib/stripe';
 import { authClient } from '@/lib/auth/client';
 import { createCheckoutSessionAction } from '@/server/actions/payment-actions';
 import { useRouter } from 'next/navigation';

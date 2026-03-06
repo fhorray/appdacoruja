@@ -6,6 +6,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import React from 'react';
 import { Toaster } from 'sonner';
 import { QueryProvider } from './query-provider';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 const Providers = ({
   children,
@@ -19,11 +20,11 @@ const Providers = ({
       <NuqsAdapter>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem
+          defaultTheme="light"
+          forcedTheme="light"
           disableTransitionOnChange
         >
-          {children}
+          <TooltipProvider>{children}</TooltipProvider>
         </ThemeProvider>
         <Toaster />
       </NuqsAdapter>

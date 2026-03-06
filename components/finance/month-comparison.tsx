@@ -49,7 +49,7 @@ export function MonthComparison({ previousMonth: prevMonth, currentMonth: currMo
     return (
       <div className={`relative overflow-hidden rounded-xl border-2 transition-all ${
         isHighlight
-          ? 'bg-blue-50 border-blue-500 shadow-md scale-105'
+          ? 'bg-blue-50 border-blue-500 shadow-md md:scale-105'
           : 'bg-white border-gray-200 shadow-sm'
       }`}>
         <div className="p-5">
@@ -58,7 +58,7 @@ export function MonthComparison({ previousMonth: prevMonth, currentMonth: currMo
               <p className={`text-sm font-medium ${isHighlight ? 'text-blue-700' : 'text-gray-500'}`}>
                 {monthData.monthName}
               </p>
-              <p className={`text-2xl font-bold mt-1 ${isHighlight ? 'text-blue-900' : 'text-gray-900'}`}>
+              <p className={`text-xl sm:text-2xl font-bold mt-1 ${isHighlight ? 'text-blue-900' : 'text-gray-900'}`}>
                 {formatCurrency(monthData.total)}
               </p>
             </div>
@@ -113,8 +113,8 @@ export function MonthComparison({ previousMonth: prevMonth, currentMonth: currMo
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Comparação Mensal - Saldo (Receitas - Despesas)</h3>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900">Comparação Mensal - Saldo (Receitas - Despesas)</h3>
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <div className="flex items-center gap-1">
             <TrendingUp className="w-3 h-3 text-green-600" />

@@ -74,7 +74,7 @@ export function CategoryChart({ expenses, incomes, totalIncome, totalExpense }: 
   const incomesWithValue = incomes.filter(r => r.total > 0);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="bg-card rounded-2xl shadow-sm border border-border/50 p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-6">
         Distribuição Mensal
       </h3>
@@ -104,7 +104,7 @@ export function CategoryChart({ expenses, incomes, totalIncome, totalExpense }: 
 
                   return (
                     <div
-                      key={item.category}
+                      key={index}
                       className={`h-full flex items-center justify-center text-white font-semibold text-xs transition-all relative group ${
                         isFirst ? 'rounded-l-lg' : ''
                       } ${isLast ? 'rounded-r-lg' : ''}`}
@@ -113,18 +113,18 @@ export function CategoryChart({ expenses, incomes, totalIncome, totalExpense }: 
                         backgroundColor: incomeColorMap[item.category],
                         minWidth: widthPercentage > 5 ? 'auto' : '2px',
                       }}
-                      title={`${item.category}: ${formatCurrency(item.total)} (${item.percentage.toFixed(1)}%)`}
+                      title={`${item.category}: ${formatCurrency(item.total)} (${(item.percentage || 0).toFixed(1)}%)`}
                     >
                       {widthPercentage > 10 && (
                         <span className="px-2 text-center">
-                          {item.percentage.toFixed(0)}%
+                          {(item.percentage || 0).toFixed(0)}%
                         </span>
                       )}
 
-                      <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">
+                      <div className="absolute -bottom-16 left-0 right-0 mx-auto sm:mx-0 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 bg-gray-900 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg flex flex-col items-center">
                         <div className="font-semibold">{item.category}</div>
                         <div>{formatCurrency(item.total)}</div>
-                        <div className="text-gray-300">{item.percentage.toFixed(1)}%</div>
+                        <div className="text-gray-300">{(item.percentage || 0).toFixed(1)}%</div>
                       </div>
                     </div>
                   );
@@ -193,7 +193,7 @@ export function CategoryChart({ expenses, incomes, totalIncome, totalExpense }: 
                           color: expenseColorMap[item.category],
                         }}
                       >
-                        {item.percentage.toFixed(1)}%
+                        {(item.percentage || 0).toFixed(1)}%
                       </span>
                     </div>
                   </div>
