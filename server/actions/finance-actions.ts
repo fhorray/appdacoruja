@@ -2,11 +2,15 @@
 
 import { db as getDb } from "@/server/database/client";
 import { transactions, categories, responsiblePersons, categoryLimits, transactionTypeEnum } from "@/server/database/schemas/finance";
+import { savingsGoals } from "@/server/database/schemas/savings-goals";
+import { recurringBills } from "@/server/database/schemas/recurring-bills";
+import { creditCards, creditCardInvoices } from "@/server/database/schemas/credit-cards";
 import { initAuth } from "@/lib/auth/server";
 import { headers } from "next/headers";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { SelectUser } from "../database/schemas";
+import { SelectUser, InsertTransaction, InsertCategory, InsertResponsiblePerson } from "../database/schemas";
+import { getAuthSession } from "@/lib/auth/server";
 
 /* Types for filters */
 export interface TransactionFilters {
@@ -20,14 +24,8 @@ export interface TransactionFilters {
 
 /* Helper to get user */
 async function getUser() {
-  const auth = await initAuth();
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session?.user) {
-    throw new Error("Usuário não autenticado");
-  }
-  return session.user as SelectUser;
+  const { user } = await getAuthSession();
+  return user;
 }
 
 // --- Transactions ---
@@ -71,7 +69,7 @@ export async function getTransactionsAction(arg?: string | TransactionFilters) {
     .orderBy(desc(transactions.date));
 }
 
-export async function createTransactionAction(data: any) {
+export async function createTransactionAction(data: InsertTransaction) {
   const user = await getUser();
   const db = await getDb();
 
@@ -79,7 +77,7 @@ export async function createTransactionAction(data: any) {
     const [newTransaction] = await db.insert(transactions).values({
       ...data,
       userId: user.id,
-      amount: String(data.amount),
+      amount: Number(data.amount),
     }).returning();
 
     revalidatePath('/transactions');
@@ -91,7 +89,7 @@ export async function createTransactionAction(data: any) {
   }
 }
 
-export async function updateTransactionAction(data: any) { // Data might be {id, ...} or just fields. use-finance passes {id, ...} or similar? 
+export async function updateTransactionAction(data: Partial<InsertTransaction> & { id: string }) { // Data might be {id, ...} or just fields. use-finance passes {id, ...} or similar? 
   // use-finance.ts uses mutationFn: updateTransactionAction.
   // Check use-finance signature. It's `updateTransaction.mutateAsync({ id, ... })` probably.
   // Assuming data has id.
@@ -105,7 +103,7 @@ export async function updateTransactionAction(data: any) { // Data might be {id,
     const [updated] = await db.update(transactions)
       .set({
         ...updateData,
-        amount: updateData.amount ? String(updateData.amount) : undefined,
+        amount: updateData.amount !== undefined ? Number(updateData.amount) : undefined,
       })
       .where(and(eq(transactions.id, id), eq(transactions.userId, user.id)))
       .returning();
@@ -144,7 +142,7 @@ export async function getCategoriesAction(arg?: string) { // arg was userId
   return db.select().from(categories).where(eq(categories.userId, user.id)).orderBy(categories.name);
 }
 
-export async function createCategoryAction(data: any) {
+export async function createCategoryAction(data: InsertCategory | string) {
   const user = await getUser();
   const db = await getDb();
   try {
@@ -160,7 +158,7 @@ export async function createCategoryAction(data: any) {
   }
 }
 
-export async function updateCategoryAction({ id, data }: { id: string, data: any }) {
+export async function updateCategoryAction({ id, data }: { id: string, data: Partial<InsertCategory> }) {
   const user = await getUser();
   const db = await getDb();
   try {
@@ -190,7 +188,7 @@ export async function getResponsiblePersonsAction(arg?: string) {
   return db.select().from(responsiblePersons).where(eq(responsiblePersons.userId, user.id)).orderBy(responsiblePersons.name);
 }
 
-export async function createResponsiblePersonAction(data: any) {
+export async function createResponsiblePersonAction(data: InsertResponsiblePerson | string) {
   const user = await getUser();
   const db = await getDb();
   try {
@@ -255,6 +253,7 @@ export async function getDashboardDataAction() {
   const currentYear = currentDate.getFullYear();
   const currentMonthStr = `${currentYear}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
 
+
   const getMonthName = (dateString: string) => {
     const [year, month] = dateString.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
@@ -275,18 +274,88 @@ export async function getDashboardDataAction() {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
   };
 
+  const lastMonthStr = getPreviousMonth(currentMonthStr);
+
   const db = await getDb();
   const allTransactions = await db.select()
     .from(transactions)
     .where(eq(transactions.userId, user.id));
 
+  const userSavingsGoals = await db.select()
+    .from(savingsGoals)
+    .where(eq(savingsGoals.userId, user.id));
+
+  const userCategoryLimits = await db.select()
+    .from(categoryLimits)
+    .where(and(eq(categoryLimits.userId, user.id), eq(categoryLimits.referenceYear, currentYear)));
+
+  const userRecurringBills = await db.select()
+    .from(recurringBills)
+    .where(and(eq(recurringBills.userId, user.id), eq(recurringBills.isActive, true)));
+
   const despesasMes = allTransactions
     .filter(t => t.month === currentMonthStr && t.type === 'expense')
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
+  const despesasMesAnterior = allTransactions
+    .filter(t => t.month === lastMonthStr && t.type === 'expense')
+    .reduce((sum, t) => sum + Number(t.amount), 0);
+  
+  // --- Enhanced Insights ---
+  const insights = [];
+
+  // 1. Comparison with previous month
+  if (despesasMes > 0 && despesasMesAnterior > 0) {
+    const diff = ((despesasMes - despesasMesAnterior) / despesasMesAnterior) * 100;
+    if (diff > 10) {
+      insights.push({
+        type: 'warning',
+        title: 'Gasto em aumento',
+        message: `Você gastou ${diff.toFixed(0)}% a mais que no mês passado até agora.`,
+      });
+    } else if (diff < -10) {
+      insights.push({
+        type: 'positive',
+        title: 'Economia detectada',
+        message: `Parabéns! Seus gastos estão ${Math.abs(diff).toFixed(0)}% menores que no mês passado.`,
+      });
+    }
+  }
+
+  // 2. Spending by category vs average (Simplified)
+  const categorySpending: Record<string, number> = {};
+  allTransactions
+    .filter(t => t.month === currentMonthStr && t.type === 'expense')
+    .forEach(t => {
+      categorySpending[t.category] = (categorySpending[t.category] || 0) + Number(t.amount);
+    });
+  
+  const topCategory = Object.entries(categorySpending).sort((a, b) => b[1] - a[1])[0];
+  if (topCategory && topCategory[1] > (0.4 * despesasMes)) {
+     insights.push({
+         type: 'info',
+         title: 'Foco em ' + topCategory[0],
+         message: `${topCategory[0]} representa ${( (topCategory[1] / despesasMes) * 100).toFixed(0)}% dos seus gastos este mês.`
+     });
+  }
+
   const receitasMes = allTransactions
     .filter(t => t.month === currentMonthStr && t.type === 'income')
     .reduce((sum, t) => sum + Number(t.amount), 0);
+
+  // 3. Committed Salary Insight
+  const totalCommitted = userRecurringBills.reduce((sum, b) => sum + Number(b.amount), 0);
+ 
+  if (receitasMes > 0) {
+      const perc = (totalCommitted / receitasMes) * 100;
+      if (perc > 50) {
+        insights.push({
+            type: 'warning',
+            title: 'Comprometimento Alto',
+            message: `Suas contas fixas ocupam ${perc.toFixed(0)}% da sua renda. Tente reduzir assinaturas.`
+        });
+      }
+  }
 
   const despesasAno = allTransactions
     .filter(t => t.year === currentYear && t.type === 'expense')
@@ -319,6 +388,22 @@ export async function getDashboardDataAction() {
       percentual: totalDespesas > 0 ? (total / totalDespesas) * 100 : 0
     }))
     .sort((a, b) => b.total - a.total);
+
+  const budgetAlerts = userCategoryLimits
+    .filter(limit => limit.monthlyLimit && limit.monthlyLimit > 0)
+    .map(limit => {
+      const gasto = gastosPorCategoria.find(g => g.categoria === limit.category);
+      const spent = gasto ? gasto.total : 0;
+      const percentage = (spent / limit.monthlyLimit!) * 100;
+      return {
+        category: limit.category,
+        limit: limit.monthlyLimit!,
+        spent,
+        percentage
+      };
+    })
+    .filter(alert => alert.percentage > 0)
+    .sort((a, b) => b.percentage - a.percentage);
 
   const receitasCateg = allTransactions
     .filter(t => t.month === currentMonthStr && t.type === 'income')
@@ -375,6 +460,46 @@ export async function getDashboardDataAction() {
   const saldoMesAtual = receitasMes - despesasMes;
   const saldoMesSeguinte = calcMonthTotal(mesSeguinte, 'income') - calcMonthTotal(mesSeguinte, 'expense');
 
+  // --- Credit Card Summary ---
+  const userCreditCards = await db.select()
+    .from(creditCards)
+    .where(and(eq(creditCards.userId, user.id), eq(creditCards.isActive, true)));
+
+  const userInvoices = await db.select()
+    .from(creditCardInvoices)
+    .where(and(eq(creditCardInvoices.userId, user.id), eq(creditCardInvoices.referenceMonth, currentMonthStr)));
+
+  const creditCardSummary = {
+    totalLimit: 0,
+    totalUsed: 0,
+    cards: [] as any[]
+  };
+
+  userCreditCards.forEach(card => {
+    creditCardSummary.totalLimit += card.creditLimit;
+    
+    // Transactions for this card this month
+    const cardTransactions = allTransactions.filter(t => t.creditCardId === card.id && t.month === currentMonthStr);
+    const invoiceTotal = cardTransactions.reduce((acc, t) => acc + Number(t.amount), 0);
+    
+    // Existing invoice record?
+    const existingInvoice = userInvoices.find(inv => inv.creditCardId === card.id);
+    const finalAmount = existingInvoice ? existingInvoice.totalAmount : invoiceTotal;
+    
+    creditCardSummary.totalUsed += finalAmount;
+    
+    creditCardSummary.cards.push({
+        id: card.id,
+        name: card.name,
+        brand: card.brand,
+        color: card.color,
+        limit: card.creditLimit,
+        used: finalAmount,
+        dueDay: card.dueDay,
+        closingDay: card.closingDay
+    });
+  });
+
   return {
     totalDespesasMes: despesasMes,
     totalReceitasMes: receitasMes,
@@ -399,6 +524,19 @@ export async function getDashboardDataAction() {
       mes: mesSeguinte,
       mesNome: getMonthName(mesSeguinte),
       total: saldoMesSeguinte
-    }
+    },
+    topSavingsGoals: userSavingsGoals,
+    budgetAlerts,
+    committedAmount: totalCommitted,
+    upcomingBills: userRecurringBills
+        .sort((a, b) => {
+            const today = new Date().getDate();
+            const aDiff = a.dueDay >= today ? a.dueDay - today : a.dueDay + 31 - today;
+            const bDiff = b.dueDay >= today ? b.dueDay - today : b.dueDay + 31 - today;
+            return aDiff - bDiff;
+        })
+        .slice(0, 3),
+    insights,
+    creditCardSummary
   };
 }

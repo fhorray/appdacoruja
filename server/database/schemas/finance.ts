@@ -59,6 +59,7 @@ export const transactions = sqliteTable("transactions", (t) => ({
   isRecurrent: t.integer("is_recurrent", { mode: "boolean" }).notNull().default(false),
   recurrenceType: t.text("recurrence_type").default("single"),
   recurrenceGroup: t.text("recurrence_group"),
+  creditCardId: t.text("credit_card_id"), // Reference to creditCards.id, left without strict fk for sqlite flexibility if needed, or we can add fk.
   userId: t.text("user_id").references(() => users.id, { onDelete: "cascade" }),
   createdAt: t.integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
 }));

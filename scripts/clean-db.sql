@@ -1,5 +1,21 @@
+-- Para rodar localmente: npx wrangler d1 execute DB --file=./scripts/clean-db.sql --local
+-- Para rodar remotamente: npx wrangler d1 execute DB --remote --file=./scripts/clean-db.sql
 -- Disable foreign key constraints to avoid order errors
 PRAGMA foreign_keys = OFF;
+
+-- Remove Finance tables
+DROP TABLE IF EXISTS transactions;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS responsible_persons;
+DROP TABLE IF EXISTS category_limits;
+DROP TABLE IF EXISTS recurring_bills;
+DROP TABLE IF EXISTS savings_goals;
+DROP TABLE IF EXISTS credit_card_invoices;
+DROP TABLE IF EXISTS credit_cards;
+
+-- Remove Investment tables
+DROP TABLE IF EXISTS retirement_configs;
+DROP TABLE IF EXISTS financial_projects;
 
 -- Remove Registry tables
 DROP TABLE IF EXISTS registries_downloads;

@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { useFinance } from '@/hooks/use-finance';
 import { authClient } from '@/lib/auth/client';
-import { toast } from 'sonner'; // Assuming sonner is installed or will use alert for now if not. The prompt didn't specify toast lib, but it's common. I'll fallback to alert or simple console if sonner not available. Check package.json? I'll use simple alert for now as per original.
+import { toast } from 'sonner';
 import { Input } from '../ui/input';
+import { suggestCategory } from '@/lib/category-suggestions';
+import { useCreditCards } from '@/hooks/use-credit-cards';
 
 interface QuickAddModalProps {
   onClose: () => void;
@@ -24,6 +26,9 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
     createResponsiblePerson
   } = useFinance(userId || "");
 
+  const { creditCardsQuery } = useCreditCards();
+  const activeCards = creditCardsQuery.data?.filter(c => c.isActive) || [];
+
   const getLocalDateString = () => {
     const now = new Date();
     const year = now.getFullYear();
@@ -40,6 +45,7 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
     category: '',
     status: 'paid', // 'paid' | 'pending' -> mapped from 'Pago' | 'Em Aberto'
     paymentMethod: '',
+    creditCardId: '',
     responsible: '',
     location: '',
     isRecurrent: false,
@@ -47,12 +53,29 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
     recurrenceMonths: '',
   });
 
+  const onDescriptionChange = (desc: string) => {
+    const suggested = suggestCategory(desc);
+    setFormData(prev => ({ 
+      ...prev, 
+      description: desc,
+      category: (desc.length > 2 && suggested) ? suggested : prev.category
+    }));
+  };
+
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [showNewResponsavel, setShowNewResponsavel] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newResponsavelName, setNewResponsavelName] = useState('');
 
-  const PAYMENT_METHODS = ['Pix', 'Boleto', 'Cartão de Crédito', 'Dinheiro'];
+  const PAYMENT_METHODS = [
+    { id: 'money', label: 'Dinheiro' },
+    { id: 'debit_card', label: 'Cartão de Débito' },
+    { id: 'credit_card', label: 'Cartão de Crédito' },
+    { id: 'pix', label: 'Pix' },
+    { id: 'bank_transfer', label: 'Transferência Bancária' },
+    { id: 'bank_slip', label: 'Boleto' },
+    { id: 'other', label: 'Outro' }
+  ];
   const STATUS_OPTIONS = [
     { label: 'Pago', value: 'paid' },
     { label: 'Em Aberto', value: 'pending' }
@@ -119,11 +142,12 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
 
       const baseTransactionData = {
         type: formData.type,
-        amount: formData.amount, // string, will be handled by Drizzle/Postgres numeric
+        amount: Number(formData.amount), // cast to number for InsertTransaction type
         description: formData.description,
         category: formData.category,
         status: formData.status,
         paymentMethod: formData.paymentMethod || null,
+        creditCardId: formData.paymentMethod === 'credit_card' && formData.creditCardId ? formData.creditCardId : null,
         responsible: formData.responsible || null,
         location: formData.location || null,
         isRecurrent: formData.isRecurrent,
@@ -242,7 +266,7 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
             <Input
               type="text"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) => onDescriptionChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Ex: Conta de luz"
               required
@@ -378,15 +402,41 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
                 </label>
                 <select
                   value={formData.paymentMethod}
-                  onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
+                  onChange={(e) => {
+                      const val = e.target.value;
+                      if (val !== 'credit_card') {
+                          setFormData({ ...formData, paymentMethod: val, creditCardId: '', status: 'paid' });
+                      } else {
+                          setFormData({ ...formData, paymentMethod: val, status: 'pending' });
+                      }
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Selecione</option>
                   {PAYMENT_METHODS.map(method => (
-                    <option key={method} value={method}>{method}</option>
+                    <option key={method.id} value={method.id}>{method.label}</option>
                   ))}
                 </select>
               </div>
+
+              {formData.paymentMethod === 'credit_card' && (
+                <div className="animate-in slide-in-from-top-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Cartão de Crédito
+                    </label>
+                    <select
+                    value={formData.creditCardId}
+                    onChange={(e) => setFormData({ ...formData, creditCardId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                    >
+                    <option value="">Selecione o cartão</option>
+                    {activeCards.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                    </select>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -10,6 +10,11 @@ import { MonthComparison } from '@/components/finance/month-comparison';
 import { SubscriptionStatus } from '@/components/finance/subscription-status';
 import { DashboardHeader } from '@/components/finance/dashboard-header';
 import { TransactionListItem } from '@/components/finance/transaction-list-item';
+import { SavingsGoalsDashboardWidget } from '@/components/finance/savings-goals-dashboard-widget';
+import { BudgetAlertsWidget } from '@/components/finance/budget-alerts-widget';
+import { CommittedSalaryWidget } from '@/components/finance/committed-salary-widget';
+import { InsightsWidget } from '@/components/finance/insights-widget';
+import { CreditCardWidget } from '@/components/finance/credit-card-widget';
 import { Button } from '@/components/ui/button';
 import { getDashboardDataAction } from "@/server/actions/finance-actions";
 import { useAuth } from '@/hooks/use-auth';
@@ -81,6 +86,16 @@ export default function DashboardPage() {
           trend="positive"
         />
       </div>
+
+      <BudgetAlertsWidget alerts={data.budgetAlerts || []} />
+      <CommittedSalaryWidget 
+        totalCommitted={data.committedAmount || 0} 
+        totalIncome={data.totalReceitasMes || 0}
+        upcomingBills={data.upcomingBills || []}
+      />
+      <InsightsWidget insights={data.insights || []} />
+      <CreditCardWidget summary={data.creditCardSummary} />
+      <SavingsGoalsDashboardWidget goals={data.topSavingsGoals || []} />
 
       <CategoryChart
         expenses={data.gastosPorCategoria}

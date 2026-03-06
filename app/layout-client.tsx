@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Receipt, TrendingUp, Target, Upload, Settings, Menu, Plus, PiggyBank, Shield, LogOut, MoreHorizontal } from 'lucide-react';
+import { Home, Receipt, TrendingUp, Target, Upload, Settings, Menu, Plus, PiggyBank, Shield, LogOut, MoreHorizontal, CalendarClock } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth/client';
@@ -31,7 +31,9 @@ interface LayoutClientProps {
 const mainNav = [
   { name: 'Dashboard', icon: Home, href: '/' },
   { name: 'Transações', icon: Receipt, href: '/transactions' },
+  { name: 'Metas (Caixinhas)', icon: Target, href: '/goals' },
   { name: 'Investimentos', icon: PiggyBank, href: '/investments' },
+  { name: 'Contas Fixas', icon: CalendarClock, href: '/bills' },
   { name: 'Limites', icon: Target, href: '/limits' },
 ];
 

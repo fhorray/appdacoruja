@@ -12,7 +12,9 @@ import {
 } from "@/components/ui/sheet";
 
 interface CustomSheetProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   title?: string;
   description?: string;
   content?: React.ReactNode | ((props: { close: () => void }) => React.ReactNode);
@@ -29,13 +31,18 @@ export function CustomSheet({
   footer,
   side = "right",
   className,
+  open: externalOpen,
+  onOpenChange: setExternalOpen,
 }: CustomSheetProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = setExternalOpen || setInternalOpen;
   const close = () => setOpen(false);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>{children}</SheetTrigger>
+      {children && <SheetTrigger asChild>{children}</SheetTrigger>}
       <SheetContent side={side} className={className}>
         <SheetHeader>
           {title && <SheetTitle>{title}</SheetTitle>}

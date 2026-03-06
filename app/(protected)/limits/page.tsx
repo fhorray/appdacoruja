@@ -1,15 +1,17 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Target, Save } from 'lucide-react';
+import { Target, Save, AlertCircle, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useFinance } from '@/hooks/use-finance';
 import { useAuth } from '@/hooks/use-auth';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { PageHeader } from '@/components/page-header';
 import { EmptyState } from '@/components/empty-state';
+import { toast } from 'sonner';
+import { NumericFormat } from 'react-number-format';
+import { cn } from '@/lib/utils';
 
 export default function LimitsPage() {
     const { user } = useAuth();
@@ -29,17 +31,17 @@ export default function LimitsPage() {
             limits.forEach((l: any) => {
                 map[l.category] = { monthly: Number(l.monthlyLimit), annual: Number(l.annualLimit) };
             });
-            // Only set if not heavily edited or just once on load. We'll set it simply.
+            // Only set if not heavily edited or just once on load
             setLocalLimits(prev => Object.keys(prev).length === 0 ? map : prev);
         }
     }, [limits]);
 
-    const handleLimitChange = (category: string, type: 'monthly' | 'annual', value: string) => {
+    const handleLimitChange = (category: string, type: 'monthly' | 'annual', value: number) => {
         setLocalLimits(prev => ({
             ...prev,
             [category]: {
                 ...(prev[category] || { monthly: 0, annual: 0 }),
-                [type]: Number(value)
+                [type]: value
             }
         }));
     };
@@ -50,14 +52,14 @@ export default function LimitsPage() {
         try {
             await upsertCategoryLimit.mutateAsync({
                 category,
-                monthlyLimit: String(limit.monthly),
-                annualLimit: String(limit.annual),
+                monthlyLimit: String(limit.monthly || 0),
+                annualLimit: String(limit.annual || 0),
                 referenceYear: new Date().getFullYear(),
                 userId
             });
-            // Optional: User feedback could be added here
+            toast.success(`Limites salvos para ${category}!`);
         } catch {
-            console.error('Failed to save limit');
+            toast.error(`Erro ao salvar limites para ${category}.`);
         }
     };
 
@@ -69,11 +71,17 @@ export default function LimitsPage() {
     const currentYear = new Date().getFullYear();
     const currentMonthStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
 
+    const getStatusInfo = (pct: number) => {
+        if (pct >= 100) return { icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-600', label: 'Ultrapassado', badgeBg: 'bg-red-50' };
+        if (pct >= 80) return { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-500', label: 'Atenção', badgeBg: 'bg-amber-50' };
+        return { icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-500', label: 'Dentro do limite', badgeBg: 'bg-emerald-50' };
+    };
+
     return (
         <div className="space-y-6 animate-in fade-in-50 duration-500">
             <PageHeader 
-                title="Limites de Gastos" 
-                description="Defina e acompanhe metas de gastos por categoria"
+                title="Orçamentos por Categoria" 
+                description="Defina limites de gastos mensais e anuais e seja alertado antes de estourar seu orçamento."
             />
 
             {expenseCategories.length === 0 ? (
@@ -83,7 +91,7 @@ export default function LimitsPage() {
                     description="Crie categorias do tipo despesa para começar a definir limites." 
                 />
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-10">
                     {expenseCategories.map(cat => {
                         const current = localLimits[cat.name] || { monthly: 0, annual: 0 };
                         
@@ -101,66 +109,103 @@ export default function LimitsPage() {
                         const monthlyPct = current.monthly > 0 ? (spentMonthly / current.monthly) * 100 : 0;
                         const annualPct = current.annual > 0 ? (spentAnnual / current.annual) * 100 : 0;
 
+                        const monthStatus = getStatusInfo(monthlyPct);
+                        const annualStatus = getStatusInfo(annualPct);
+
                         return (
                             <Card key={cat.id} className="flex flex-col shadow-sm hover:shadow-md transition-shadow">
                                 <CardHeader className="pb-4">
-                                    <CardTitle className="text-lg text-foreground">{cat.name}</CardTitle>
+                                    <CardTitle className="text-lg text-foreground flex items-center justify-between">
+                                        {cat.name}
+                                        {current.monthly > 0 && (
+                                            <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium", monthStatus.color, monthStatus.badgeBg)}>
+                                                <monthStatus.icon className="w-3.5 h-3.5" />
+                                                {monthStatus.label}
+                                            </div>
+                                        )}
+                                    </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-6 flex-1">
+                                <CardContent className="space-y-8 flex-1">
+                                    {/* Monthly Limit */}
                                     <div className="space-y-3">
                                         <div className="flex justify-between items-end">
-                                            <label className="text-sm font-medium text-muted-foreground">Limite Mensal</label>
+                                            <label className="text-sm font-medium text-muted-foreground">Orçamento Mensal</label>
                                             <span className="text-sm font-semibold text-foreground">
                                                 {formatCurrency(spentMonthly)} <span className="text-muted-foreground mx-1">/</span> 
                                                 <span className="text-muted-foreground font-normal">{formatCurrency(current.monthly)}</span>
                                             </span>
                                         </div>
-                                        <div className="relative">
-                                            <span className="absolute left-3 top-2.5 text-muted-foreground text-sm font-medium">R$</span>
-                                            <Input
-                                                type="number"
-                                                value={current.monthly || ''}
-                                                onChange={(e) => handleLimitChange(cat.name, 'monthly', e.target.value)}
-                                                className="pl-9 bg-muted/30 border-transparent hover:border-border focus:border-border focus:bg-background transition-colors"
-                                            />
-                                        </div>
-                                        <Progress 
-                                            value={Math.min(monthlyPct, 100)} 
-                                            className={`h-2 ${monthlyPct > 100 ? '[&>div]:bg-red-600' : monthlyPct > 80 ? '[&>div]:bg-amber-500' : '[&>div]:bg-emerald-500'}`}
+                                        <NumericFormat
+                                            value={current.monthly || ''}
+                                            onValueChange={(values) => handleLimitChange(cat.name, 'monthly', values.floatValue || 0)}
+                                            thousandSeparator="."
+                                            decimalSeparator=","
+                                            prefix="R$ "
+                                            decimalScale={2}
+                                            fixedDecimalScale
+                                            allowNegative={false}
+                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
+                                            placeholder="R$ 0,00"
                                         />
+                                        {current.monthly > 0 && (
+                                            <div className="space-y-1.5">
+                                                <div className="flex justify-between text-xs text-muted-foreground font-medium">
+                                                    <span>Progresso atual</span>
+                                                    <span>{Math.min(monthlyPct, 100).toFixed(0)}%</span>
+                                                </div>
+                                                <Progress 
+                                                    value={Math.min(monthlyPct, 100)} 
+                                                    className="h-2"
+                                                    indicatorClassName={monthStatus.bg}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
 
+                                    {/* Annual Limit */}
                                     <div className="space-y-3">
                                         <div className="flex justify-between items-end">
-                                            <label className="text-sm font-medium text-muted-foreground">Limite Anual</label>
+                                            <label className="text-sm font-medium text-muted-foreground">Orçamento Anual</label>
                                             <span className="text-sm font-semibold text-foreground">
                                                 {formatCurrency(spentAnnual)} <span className="text-muted-foreground mx-1">/</span> 
                                                 <span className="text-muted-foreground font-normal">{formatCurrency(current.annual)}</span>
                                             </span>
                                         </div>
-                                        <div className="relative">
-                                            <span className="absolute left-3 top-2.5 text-muted-foreground text-sm font-medium">R$</span>
-                                            <Input
-                                                type="number"
-                                                value={current.annual || ''}
-                                                onChange={(e) => handleLimitChange(cat.name, 'annual', e.target.value)}
-                                                className="pl-9 bg-muted/30 border-transparent hover:border-border focus:border-border focus:bg-background transition-colors"
-                                            />
-                                        </div>
-                                        <Progress 
-                                            value={Math.min(annualPct, 100)} 
-                                            className={`h-2 ${annualPct > 100 ? '[&>div]:bg-red-600' : annualPct > 80 ? '[&>div]:bg-amber-500' : '[&>div]:bg-emerald-500'}`}
+                                        <NumericFormat
+                                            value={current.annual || ''}
+                                            onValueChange={(values) => handleLimitChange(cat.name, 'annual', values.floatValue || 0)}
+                                            thousandSeparator="."
+                                            decimalSeparator=","
+                                            prefix="R$ "
+                                            decimalScale={2}
+                                            fixedDecimalScale
+                                            allowNegative={false}
+                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
+                                            placeholder="R$ 0,00"
                                         />
+                                        {current.annual > 0 && (
+                                            <div className="space-y-1.5">
+                                                <div className="flex justify-between text-xs text-muted-foreground font-medium">
+                                                    <span>Progresso anual</span>
+                                                    <span>{Math.min(annualPct, 100).toFixed(0)}%</span>
+                                                </div>
+                                                <Progress 
+                                                    value={Math.min(annualPct, 100)} 
+                                                    className="h-2"
+                                                    indicatorClassName={annualStatus.bg}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </CardContent>
                                 <CardFooter className="pt-2 border-t mt-auto">
                                     <Button
                                         variant="ghost"
                                         onClick={() => handleSave(cat.name)}
-                                        className="w-full text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950"
+                                        className="w-full text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950 transition-all font-medium"
                                     >
                                         <Save className="w-4 h-4 mr-2" />
-                                        Salvar Limite
+                                        Salvar Orçamento
                                     </Button>
                                 </CardFooter>
                             </Card>

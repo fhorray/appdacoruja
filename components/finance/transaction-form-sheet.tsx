@@ -11,6 +11,8 @@ import { CustomSheet } from '../custom-sheet';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
 import { NumericFormat } from 'react-number-format';
+import { suggestCategory } from '@/lib/category-suggestions';
+import { useCreditCards } from '@/hooks/use-credit-cards';
 
 interface TransactionFormModalProps {
   children?: React.ReactNode;
@@ -23,8 +25,7 @@ export function TransactionFormModal({ children, initialData, mode, userId }: Tr
   return (
     <CustomSheet
       title={mode === 'create' ? 'Nova Transação' : 'Editar Transação'}
-      side="right"
-      className="w-full sm:max-w-xl overflow-y-auto px-4"
+      className="px-4 !max-w-xl"
       content={({ close }) => (
         <TransactionFormContent initialData={initialData} mode={mode} userId={userId} close={close} />
       )}
@@ -45,6 +46,9 @@ function TransactionFormContent({ initialData, mode, userId, close }: { initialD
     createCategory,
     createResponsiblePerson
   } = useFinance(userId);
+
+  const { creditCardsQuery } = useCreditCards();
+  const activeCards = creditCardsQuery.data?.filter(c => c.isActive) || [];
 
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [showNewResponsavel, setShowNewResponsavel] = useState(false);
@@ -94,6 +98,8 @@ function TransactionFormContent({ initialData, mode, userId, close }: { initialD
       category: initialData?.category || initialData?.categoria || '',
       status: initialData?.status || 'paid',
       responsible: (initialData?.responsible || '') === '' ? 'none' : initialData.responsible,
+      paymentMethod: initialData?.paymentMethod || 'money',
+      creditCardId: initialData?.creditCardId || '',
     },
     onSubmit: async ({ value }) => {
       try {
@@ -103,11 +109,13 @@ function TransactionFormContent({ initialData, mode, userId, close }: { initialD
 
         const baseTransactionData = {
           type: value.type,
-          amount: String(value.amount),
+          amount: Number(value.amount),
           description: value.description,
           category: value.category,
           status: value.status,
           responsible: value.responsible === 'none' ? null : value.responsible,
+          paymentMethod: value.paymentMethod,
+          creditCardId: value.paymentMethod === 'credit_card' ? value.creditCardId : null,
           isRecurrent: false,
           recurrenceType: 'single',
           date: new Date(value.date + "T12:00:00"),
@@ -133,11 +141,22 @@ function TransactionFormContent({ initialData, mode, userId, close }: { initialD
   });
 
   const formType = useStore(form.store, (state: any) => state.values.type);
+  const paymentMethodVal = useStore(form.store, (state: any) => state.values.paymentMethod);
   const canSubmit = useStore(form.store, (state: any) => state.canSubmit);
 
   const STATUS_OPTIONS = [
     { label: 'Pago', value: 'paid' },
     { label: 'Em Aberto', value: 'pending' }
+  ];
+
+  const PAYMENT_METHOD_OPTIONS = [
+    { label: 'Dinheiro', value: 'money' },
+    { label: 'Cartão de Débito', value: 'debit_card' },
+    { label: 'Cartão de Crédito', value: 'credit_card' },
+    { label: 'Pix', value: 'pix' },
+    { label: 'Transferência Bancária', value: 'bank_transfer' },
+    { label: 'Boleto', value: 'bank_slip' },
+    { label: 'Outro', value: 'other' }
   ];
 
   const filteredCategories = categoriesQuery.data?.filter(
@@ -252,9 +271,17 @@ function TransactionFormContent({ initialData, mode, userId, close }: { initialD
             children={(field) => (
               <field.InputField
                 label="Descrição"
-                className="h-12 bg-muted/50 border-0 focus-visible:ring-1 focus-visible:ring-primary/50"
+                className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
                 placeholder="Ex: Supermercado"
                 required
+                onChange={(e: any) => {
+                    const val = e.target.value;
+                    field.handleChange(val);
+                    const suggested = suggestCategory(val);
+                    if (val.length > 2 && suggested) {
+                        form.setFieldValue('category', suggested);
+                    }
+                }}
               />
             )}
           />
@@ -278,7 +305,7 @@ function TransactionFormContent({ initialData, mode, userId, close }: { initialD
                 <field.SelectField
                   label="Status"
                   options={STATUS_OPTIONS}
-                  className="!h-12 bg-muted/50 border-0 focus:ring-1 focus:ring-primary/50"
+                  className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
                 />
               )}
             />
@@ -291,7 +318,7 @@ function TransactionFormContent({ initialData, mode, userId, close }: { initialD
                 <field.SelectField
                   label="Categoria"
                   placeholder="Selecione uma categoria"
-                  className="h-12 bg-muted/50 border-0 focus:ring-1 focus:ring-primary/50"
+                  className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
                   options={[
                     ...filteredCategories.map(c => ({ label: c.name, value: c.name })),
                     { label: "+ Nova Categoria", value: "__new__" }
@@ -318,6 +345,48 @@ function TransactionFormContent({ initialData, mode, userId, close }: { initialD
             )}
           </div>
 
+          <div className="space-y-2">
+            <form.AppField
+              name="paymentMethod"
+              children={(field) => (
+                <field.SelectField
+                  label="Forma de Pagamento"
+                  options={PAYMENT_METHOD_OPTIONS}
+                  className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                  required
+                  onValueChange={(val) => {
+                      field.handleChange(val);
+                      if (val !== 'credit_card') {
+                          form.setFieldValue('creditCardId', '');
+                          if (formType === 'expense') {
+                              form.setFieldValue('status', 'paid');
+                          }
+                      } else {
+                          form.setFieldValue('status', 'pending');
+                      }
+                  }}
+                />
+              )}
+            />
+          </div>
+
+          {paymentMethodVal === 'credit_card' && formType === 'expense' && (
+            <div className="space-y-2 animate-in slide-in-from-top-2">
+                <form.AppField
+                name="creditCardId"
+                children={(field) => (
+                    <field.SelectField
+                    label="Cartão de Crédito"
+                    placeholder="Selecione o cartão"
+                    options={activeCards.map((c: any) => ({ label: c.name, value: c.id }))}
+                    className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                    required
+                    />
+                )}
+                />
+            </div>
+          )}
+
           {formType === 'expense' && (
             <div className="space-y-2">
               <form.AppField
@@ -326,7 +395,7 @@ function TransactionFormContent({ initialData, mode, userId, close }: { initialD
                   <field.SelectField
                     label="Responsável (Opcional)"
                     placeholder="Selecione o responsável"
-                    className="h-12 bg-muted/50 border-0 focus:ring-1 focus:ring-primary/50"
+                    className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
                     options={[
                       { label: "Nenhum", value: "none" },
                       ...activeResponsiblePersons.map(r => ({ label: r.name, value: r.name })),
@@ -361,7 +430,7 @@ function TransactionFormContent({ initialData, mode, userId, close }: { initialD
         <Button 
           type="submit" 
           disabled={isSaving || !canSubmit} 
-          className="w-full h-12 rounded-xl text-base font-semibold"
+          className="h-12 rounded-xl text-base font-semibold"
         >
           {isSaving && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
           {isSaving ? 'Salvando...' : 'Salvar Transação'}

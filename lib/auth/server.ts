@@ -7,6 +7,8 @@ import { stripe } from "@better-auth/stripe";
 import { stripeClient } from "@/lib/stripe";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { drizzle } from "drizzle-orm/d1";
+import { headers } from "next/headers";
+import { SelectUser, SelectSession } from "@/server/database/schemas";
 
 /**
  * Single auth configuration that handles both CLI and runtime scenarios
@@ -82,4 +84,23 @@ export { createAuth };
 export async function initAuth() {
   const { env, cf } = await getCloudflareContext({ async: true });
   return createAuth(env, cf);
+}
+
+/**
+ * Helper to get the current authenticated session
+ */
+export async function getAuthSession() {
+  const authInstance = await initAuth();
+  const session = await authInstance.api.getSession({
+    headers: await headers(),
+  });
+
+  console.log("SESSION: ", session)
+
+  if (!session) throw new Error("Unauthorized");
+  
+  return session as {
+    session: { session: SelectSession, user: SelectUser };
+    user: SelectUser;
+  };
 }
