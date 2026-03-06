@@ -21,7 +21,8 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarHeader,
-  SidebarTrigger
+  SidebarTrigger,
+  SidebarRail
 } from "@/components/ui/sidebar";
 import Image from 'next/image';
 
@@ -52,9 +53,12 @@ const AppSidebar = ({ user, handleLogout, pathname }: { user: any, handleLogout:
 
   return (
     <Sidebar className="border-r hidden md:flex z-20" collapsible='icon'>
-      <SidebarHeader className="p-4 md:p-3 flex items-center justify-between border-b group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-4">
+      <SidebarHeader className="p-4 md:p-3 flex flex-row items-center justify-between border-b group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-4">
         <Link href="/" className="hover:opacity-80 transition-opacity group-data-[collapsible=icon]:hidden">
           <Image src="/logo-blue-flat.png" alt="App da Coruja" width={110} height={110} className="w-auto p-2" priority />
+        </Link>
+        <Link href="/" className="hidden hover:opacity-80 transition-opacity group-data-[collapsible=icon]:block mt-2">
+          <Image src="/icon.png" alt="App da Coruja" width={24} height={24} className="w-6 h-6" priority />
         </Link>
         <SidebarTrigger />
       </SidebarHeader>
@@ -143,6 +147,7 @@ const AppSidebar = ({ user, handleLogout, pathname }: { user: any, handleLogout:
           </div>
         )}
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 };

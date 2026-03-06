@@ -12,7 +12,7 @@ export const useInvestments = (userId: string) => {
   // --- Retirement Configuration ---
   const retirementConfigQuery = useQuery({
     queryKey: ['retirement-config', userId],
-    queryFn: () => getRetirementConfigAction(userId),
+    queryFn: () => getRetirementConfigAction(),
     enabled: !!userId,
   });
 
@@ -23,7 +23,7 @@ export const useInvestments = (userId: string) => {
   // --- Financial Projects ---
   const financialProjectsQuery = useQuery({
     queryKey: ['financial-projects', userId],
-    queryFn: () => getFinancialProjectsAction(userId),
+    queryFn: () => getFinancialProjectsAction(),
     enabled: !!userId,
   });
 
