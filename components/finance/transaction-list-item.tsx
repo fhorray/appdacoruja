@@ -61,7 +61,7 @@ export function TransactionListItem({ transaction, formatCurrency, userId, class
             </div>
           </div>
 
-          <div className="flex flex-col items-end">
+          <div className="flex flex-col items-end transition-transform duration-300 group-hover/item:-translate-x-[76px]">
             <span className={cn(
               "font-semibold text-sm sm:text-base",
               isIncome ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"

@@ -385,7 +385,7 @@ export async function getDashboardDataAction() {
     .map(([categoria, total]) => ({
       categoria,
       total,
-      percentual: totalDespesas > 0 ? (total / totalDespesas) * 100 : 0
+      percentage: totalDespesas > 0 ? (total / totalDespesas) * 100 : 0
     }))
     .sort((a, b) => b.total - a.total);
 
@@ -419,7 +419,7 @@ export async function getDashboardDataAction() {
     .map(([categoria, total]) => ({
       categoria,
       total,
-      percentual: receitasMes > 0 ? (total / receitasMes) * 100 : 0
+      percentage: receitasMes > 0 ? (total / receitasMes) * 100 : 0
     }))
     .sort((a, b) => b.total - a.total);
 
