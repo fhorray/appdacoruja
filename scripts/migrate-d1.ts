@@ -26,7 +26,6 @@ for (const migration of migrations) {
   console.log(`\n📦 Applying: ${migration}...`);
 
   const wranglerArgs = [
-    'wrangler',
     'd1',
     'execute',
     'DB', // Use binding name instead of hardcoded 'progy'
@@ -37,10 +36,10 @@ for (const migration of migrations) {
     ...extraArgs
   ];
 
-  const result = spawnSync('bun', wranglerArgs, {
-    stdio: 'pipe',
+  const result = spawnSync('npx', ['wrangler', ...wranglerArgs], {
+    stdio: 'inherit',
     shell: true,
-    cwd: __dirname
+    cwd: join(__dirname, '..') // Run from project root
   });
 
   if (result.status !== 0) {

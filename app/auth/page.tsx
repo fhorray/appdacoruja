@@ -113,65 +113,83 @@ export default function AuthPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">
-            <div className="w-full max-w-[1000px] grid lg:grid-cols-2 gap-8 items-center bg-background rounded-3xl shadow-2xl overflow-hidden border">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-zinc-50 dark:bg-zinc-950">
+            <div className="w-full max-w-[1000px] grid lg:grid-cols-2 gap-0 items-stretch bg-background rounded-[32px] overflow-hidden border border-border/60">
                 
                 {/* Left side Image or Brand Graphic - Hidden on small screens */}
-                <div className="hidden lg:flex flex-col justify-center p-12 bg-gradient-to-br from-blue-600 to-indigo-800 text-white h-full min-h-[600px] relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay"></div>
-                    <div className="absolute -top-32 -right-32 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-                    <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl"></div>
+                <div className="hidden lg:flex flex-col justify-center p-12 bg-[#1a1a1a] text-white h-auto relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
                     
                     <div className="relative z-10">
-                        <Image src="/logo-white.png" alt="App da Coruja" width={180} height={180} className="mb-8 drop-shadow-lg filter brightness-0 invert" style={{ filter: 'brightness(0) invert(1)' }} />
-                        <h1 className="text-4xl font-extrabold tracking-tight mb-4">Finanças Descomplicadas</h1>
-                        <p className="text-blue-100 text-lg max-w-sm mb-8">
-                            Junte-se a milhares de usuários e retome o controle da sua vida financeira com ferramentas poderosas e preditivas.
+                        <div className="mb-10">
+                           <Image 
+                                src="/logo-blue.png" 
+                                alt="App da Coruja" 
+                                width={120} 
+                                height={120} 
+                                className="filter brightness-0 invert opacity-90"
+                            />
+                        </div>
+                        <h1 className="text-4xl font-bold tracking-tight mb-4 leading-tight">
+                            Finanças de forma <span className="text-primary italic">simples.</span>
+                        </h1>
+                        <p className="text-zinc-400 text-lg max-w-sm mb-10 leading-relaxed">
+                            A plataforma definitiva para você retomar o controle total da sua vida financeira com inteligência.
                         </p>
                         
-                        <div className="flex items-center gap-4 text-blue-200 text-sm font-medium">
-                            <CheckCircle2 className="w-5 h-5 text-emerald-400" /> Metas inteligentes
-                            <CheckCircle2 className="w-5 h-5 text-emerald-400 ml-4" /> Relatórios visuais
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3 text-zinc-300 text-sm font-medium">
+                                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                                    <CheckCircle2 className="w-4 h-4 text-primary" />
+                                </div>
+                                Metas inteligentes e automáticas
+                            </div>
+                            <div className="flex items-center gap-3 text-zinc-300 text-sm font-medium">
+                                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                                    <CheckCircle2 className="w-4 h-4 text-primary" />
+                                </div>
+                                Relatórios visuais em tempo real
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Right side form */}
-                <div className="p-8 sm:p-12 w-full max-w-md mx-auto">
-                    <div className="lg:hidden mb-8 flex justify-center">
-                        <Image src="/logo-blue.png" alt="App da Coruja" width={120} height={120} />
+                <div className="p-8 sm:p-14 w-full flex flex-col justify-center">
+                    <div className="lg:hidden mb-10 flex justify-center">
+                        <Image src="/logo-blue.png" alt="App da Coruja" width={110} height={110} />
                     </div>
 
-                    <div className="text-center sm:text-left mb-8 animate-in slide-in-from-bottom-4 duration-500 fade-in">
-                        <h2 className="text-3xl font-bold tracking-tight text-foreground mb-2">
-                            {mode === 'login' ? 'Bem-vindo de volta' : 'Crie sua conta'}
+                    <div className="mb-10 animate-in slide-in-from-bottom-4 duration-500 fade-in">
+                        <h2 className="text-3xl font-bold tracking-tight text-foreground mb-3">
+                            {mode === 'login' ? 'Boas-vindas' : 'Crie sua conta'}
                         </h2>
-                        <p className="text-muted-foreground">
+                        <p className="text-muted-foreground text-[15px]">
                             {mode === 'login' 
-                                ? 'Insira suas credenciais para acessar sua conta.' 
-                                : 'Preencha os dados abaixo para começar gratuitamente.'}
+                                ? 'Acesse sua conta para gerenciar suas finanças.' 
+                                : 'Comece agora sua jornada para a liberdade financeira.'}
                         </p>
                     </div>
 
                     {error && (
-                        <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl flex items-start gap-3 animate-in fade-in duration-300">
+                        <div className="mb-8 p-4 bg-destructive/5 border border-destructive/10 text-destructive rounded-2xl flex items-start gap-3 animate-in fade-in duration-300">
                             <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                             <p className="text-sm font-medium">{error}</p>
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-4 animate-in slide-in-from-bottom-6 duration-700 fade-in">
+                    <form onSubmit={handleSubmit} className="space-y-5 animate-in slide-in-from-bottom-6 duration-700 fade-in">
                         {mode === 'signup' && (
                             <div className="space-y-2">
-                                <Label htmlFor="name">Nome completo</Label>
+                                <Label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">Nome completo</Label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                    <User className="absolute left-4 top-3.5 h-4 w-4 text-muted-foreground/60" />
                                     <Input 
                                         id="name" 
                                         value={name} 
                                         onChange={e => setName(e.target.value)}
-                                        className="pl-10 h-11" 
-                                        placeholder="João da Silva" 
+                                        className="pl-12 h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl" 
+                                        placeholder="Seu nome" 
                                         required 
                                     />
                                 </div>
@@ -179,15 +197,15 @@ export default function AuthPage() {
                         )}
 
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">Email</Label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Mail className="absolute left-4 top-3.5 h-4 w-4 text-muted-foreground/60" />
                                 <Input 
                                     id="email" 
                                     type="email" 
                                     value={email} 
                                     onChange={e => setEmail(e.target.value)}
-                                    className="pl-10 h-11" 
+                                    className="pl-12 h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl" 
                                     placeholder="seu@email.com" 
                                     required 
                                 />
@@ -195,22 +213,22 @@ export default function AuthPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                                <Label htmlFor="password">Senha</Label>
+                            <div className="flex items-center justify-between ml-1">
+                                <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Senha</Label>
                                 {mode === 'login' && (
-                                    <a href="#" className="text-sm font-medium text-primary hover:underline">
-                                        Esqueceu a senha?
+                                    <a href="#" className="text-xs font-semibold text-primary hover:opacity-80 transition-opacity">
+                                        Esqueceu?
                                     </a>
                                 )}
                             </div>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Lock className="absolute left-4 top-3.5 h-4 w-4 text-muted-foreground/60" />
                                 <Input 
                                     id="password" 
                                     type="password" 
                                     value={password} 
                                     onChange={e => setPassword(e.target.value)}
-                                    className="pl-10 h-11" 
+                                    className="pl-12 h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl" 
                                     placeholder="••••••••" 
                                     required 
                                 />
@@ -219,15 +237,15 @@ export default function AuthPage() {
 
                         {mode === 'signup' && (
                             <div className="space-y-2">
-                                <Label htmlFor="confirmPassword">Confirmar senha</Label>
+                                <Label htmlFor="confirmPassword" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">Confirmar senha</Label>
                                 <div className="relative">
-                                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                    <Lock className="absolute left-4 top-3.5 h-4 w-4 text-muted-foreground/60" />
                                     <Input 
                                         id="confirmPassword" 
                                         type="password" 
                                         value={confirmPassword} 
                                         onChange={e => setConfirmPassword(e.target.value)}
-                                        className="pl-10 h-11" 
+                                        className="pl-12 h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl" 
                                         placeholder="••••••••" 
                                         required 
                                     />
@@ -237,7 +255,7 @@ export default function AuthPage() {
 
                         <Button 
                             type="submit" 
-                            className="w-full h-11 text-base font-semibold mt-6 shadow-md hover:shadow-lg transition-all"
+                            className="w-full h-12 text-base font-bold mt-8 rounded-xl transition-all active:scale-[0.98]"
                             disabled={loading}
                         >
                             {loading ? (
@@ -245,29 +263,29 @@ export default function AuthPage() {
                             ) : mode === 'login' ? (
                                 <>Entrar <ArrowRight className="w-4 h-4 ml-2" /></>
                             ) : (
-                                'Criar Conta'
+                                'Criar Minha Conta'
                             )}
                         </Button>
                     </form>
 
-                    <div className="mt-8 relative">
+                    <div className="mt-10 relative">
                         <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-border"></div>
+                            <div className="w-full border-t border-border/50"></div>
                         </div>
-                        <div className="relative flex justify-center text-sm">
-                            <span className="px-4 bg-background text-muted-foreground">Ou continue com</span>
+                        <div className="relative flex justify-center text-xs font-bold uppercase tracking-widest">
+                            <span className="px-4 bg-background text-muted-foreground/60">Ou</span>
                         </div>
                     </div>
 
-                    <div className="mt-6">
+                    <div className="mt-8">
                         <Button
                             type="button"
                             variant="outline"
                             onClick={() => handleSocialAuth('google')}
                             disabled={loading}
-                            className="w-full h-11 font-medium bg-background hover:bg-muted"
+                            className="w-full h-12 font-bold border-none bg-muted/30 hover:bg-muted/50 rounded-xl transition-all active:scale-[0.98]"
                         >
-                            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                                 <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
@@ -277,7 +295,7 @@ export default function AuthPage() {
                         </Button>
                     </div>
 
-                    <p className="mt-8 text-center text-sm text-muted-foreground">
+                    <p className="mt-10 text-center text-[13px] text-muted-foreground">
                         {mode === 'login' ? 'Não tem uma conta? ' : 'Já tem uma conta? '}
                         <button
                             type="button"
@@ -288,9 +306,9 @@ export default function AuthPage() {
                                 setPassword('');
                                 setConfirmPassword('');
                             }}
-                            className="text-primary hover:text-primary/80 font-semibold transition-colors focus:outline-none focus:underline"
+                            className="text-primary font-bold hover:underline transition-all"
                         >
-                            {mode === 'login' ? 'Criar conta gratuitamente' : 'Entrar na sua conta'}
+                            {mode === 'login' ? 'Começar gratuitamente' : 'Entrar agora'}
                         </button>
                     </p>
                 </div>
