@@ -10,6 +10,17 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface CustomSheetProps {
   children?: React.ReactNode;
@@ -35,10 +46,37 @@ export function CustomSheet({
   onOpenChange: setExternalOpen,
 }: CustomSheetProps) {
   const [internalOpen, setInternalOpen] = useState(false);
+  const isMobile = useIsMobile();
   
   const open = externalOpen !== undefined ? externalOpen : internalOpen;
   const setOpen = setExternalOpen || setInternalOpen;
   const close = () => setOpen(false);
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={setOpen}>
+        {children && <DrawerTrigger asChild>{children}</DrawerTrigger>}
+        <DrawerContent className={className}>
+          <DrawerHeader className="text-left">
+            {title && <DrawerTitle>{title}</DrawerTitle>}
+            {description && <DrawerDescription>{description}</DrawerDescription>}
+          </DrawerHeader>
+          <ScrollArea className="max-h-[70vh] px-4">
+            {content && (
+              <div className="grid gap-4 py-4">
+                {typeof content === "function" ? content({ close }) : content}
+              </div>
+            )}
+          </ScrollArea>
+          {footer && (
+            <DrawerFooter className="pt-2">
+              {typeof footer === "function" ? footer({ close }) : footer}
+            </DrawerFooter>
+          )}
+        </DrawerContent>
+      </Drawer>
+    );
+  }
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>

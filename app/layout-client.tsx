@@ -187,7 +187,7 @@ export function LayoutClient({ children }: LayoutClientProps) {
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto pb-24 md:pb-0 scroll-smooth bg-slate-50 dark:bg-background">
-          <div className="container mx-auto max-w-7xl pt-4 md:pt-8 px-4 sm:px-6 lg:px-8">
+          <div className="container mx-auto max-w-7xl pt-4 md:pt-8 px-2 md:px-4 sm:px-6 lg:px-8">
             {children}
           </div>
         </main>
@@ -208,7 +208,7 @@ export function LayoutClient({ children }: LayoutClientProps) {
                 )}
               >
                 <Icon className={cn("w-5 h-5", active && "stroke-[2.5px]")} />
-                <span className="text-[10px] font-medium">{item.name}</span>
+                <span className="text-[10px] font-medium">{item.name === 'Metas (Caixinhas)' ? 'Metas' : item.name}</span>
               </Link>
             );
           })}
