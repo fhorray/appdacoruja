@@ -113,12 +113,12 @@ export default function AuthPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-zinc-50 dark:bg-zinc-950">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-zinc-50 dark:bg-black">
             <div className="w-full max-w-[1000px] grid lg:grid-cols-2 gap-0 items-stretch bg-background rounded-[32px] overflow-hidden border border-border/60">
                 
                 {/* Left side Image or Brand Graphic - Hidden on small screens */}
-                <div className="hidden lg:flex flex-col justify-center p-12 bg-[#1a1a1a] text-white h-auto relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                <div className="hidden lg:flex flex-col justify-center p-12 bg-gradient-to-br from-indigo-950 via-blue-900 to-indigo-950 text-white h-auto relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
                     
                     <div className="relative z-10">
                         <div className="mb-10">
