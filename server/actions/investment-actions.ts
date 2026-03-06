@@ -1,3 +1,5 @@
+"use server";
+
 import { db } from "../database/client";
 import { retirementConfigs, financialProjects } from "../database/schemas/investments";
 import { eq, and } from "drizzle-orm";
