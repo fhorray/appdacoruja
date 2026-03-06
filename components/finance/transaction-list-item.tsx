@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ArrowDownRight, ArrowUpRight, ReceiptText } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { TransactionFormModal } from "./transaction-form-modal";
 
 interface TransactionListItemProps {
@@ -24,7 +24,7 @@ export function TransactionListItem({ transaction, formatCurrency, userId }: Tra
       : new Date(transaction.date);
 
     formattedDate = format(dateObj, "dd 'de' MMM", { locale: ptBR });
-  } catch(e) {
+  } catch {
     formattedDate = transaction.data || transaction.date || "";
   }
 

@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { TrendingDown, TrendingUp, Wallet, PiggyBank, Eye, EyeOff, Landmark, ReceiptText } from 'lucide-react';
+import { PiggyBank, Landmark, ReceiptText } from 'lucide-react';
 import { StatCard } from '@/components/stat-card';
-import { PageHeader } from '@/components/page-header';
 import { EmptyState } from '@/components/empty-state';
 import { CategoryChart } from '@/components/finance/category-chart';
 import { MonthComparison } from '@/components/finance/month-comparison';

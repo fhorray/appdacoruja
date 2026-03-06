@@ -67,8 +67,6 @@ function TransactionFormContent({ initialData, mode, userId, close }: { initialD
     paymentMethod: initialData?.paymentMethod || '',
     responsible: initialData?.responsible || '',
     location: initialData?.location || '',
-    isRecurrent: initialData?.isRecurrent || false,
-    recurrenceType: initialData?.recurrenceType || 'single',
   });
 
   const [showNewCategory, setShowNewCategory] = useState(false);
@@ -139,8 +137,8 @@ function TransactionFormContent({ initialData, mode, userId, close }: { initialD
         paymentMethod: formData.paymentMethod || null,
         responsible: formData.responsible || null,
         location: formData.location || null,
-        isRecurrent: formData.isRecurrent,
-        recurrenceType: formData.recurrenceType,
+        isRecurrent: false,
+        recurrenceType: 'single',
         date: new Date(formData.date + "T12:00:00"),
         month: monthLabel,
         year: year,

@@ -2,7 +2,6 @@
 
 import { Eye, EyeOff, Plus, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { TransactionFormModal } from "./transaction-form-modal";
 import { useAuth } from "@/hooks/use-auth";
 
