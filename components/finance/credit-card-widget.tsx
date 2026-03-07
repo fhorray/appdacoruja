@@ -6,6 +6,8 @@ import { Progress } from "@/components/ui/progress";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { InvoiceDetailSheet } from "./invoice-detail-sheet";
+import { useState } from "react";
 
 interface CreditCardSummaryData {
   totalLimit: number;
@@ -27,6 +29,14 @@ interface CreditCardWidgetProps {
 }
 
 export function CreditCardWidget({ summary }: CreditCardWidgetProps) {
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
+  const currentMonth = new Date().toISOString().substring(0, 7);
+
+  const handleOpenInvoice = (cardId: string) => {
+    setSelectedCardId(cardId);
+    setInvoiceOpen(true);
+  };
   if (!summary || summary.cards.length === 0) {
     return (
       <Card className="col-span-full md:col-span-1 shadow-sm border-primary/10">
@@ -78,9 +88,9 @@ export function CreditCardWidget({ summary }: CreditCardWidgetProps) {
               {formatCurrency(summary.totalUsed)} / {formatCurrency(summary.totalLimit)}
             </span>
           </div>
-          <Progress 
-            value={overallPercentage} 
-            className="h-2" 
+          <Progress
+            value={overallPercentage}
+            className="h-2"
             indicatorClassName={overallPercentage > 80 ? "bg-red-500" : overallPercentage > 50 ? "bg-amber-500" : "bg-primary"}
           />
         </div>
@@ -92,17 +102,28 @@ export function CreditCardWidget({ summary }: CreditCardWidgetProps) {
               <div key={card.id} className="space-y-1.5 relative">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    <div 
-                      className="w-2 h-2 rounded-full" 
-                      style={{ backgroundColor: card.color || 'var(--primary)' }} 
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: card.color || 'var(--primary)' }}
                     />
                     <span className="text-sm font-medium">{card.name}</span>
                   </div>
-                  <span className="text-sm font-bold">{formatCurrency(card.used)}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold">{formatCurrency(card.used)}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-muted-foreground hover:text-primary"
+                      onClick={() => handleOpenInvoice(card.id)}
+                      title="Ver Fatura"
+                    >
+                      <Plus className="w-3 h-3 rotate-45" />
+                    </Button>
+                  </div>
                 </div>
-                <Progress 
-                  value={perc} 
-                  className="h-1.5 bg-muted" 
+                <Progress
+                  value={perc}
+                  className="h-1.5 bg-muted"
                   indicatorClassName={perc > 80 ? "bg-red-500" : "bg-primary"}
                   style={perc <= 80 && card.color ? { backgroundColor: card.color } : {}}
                 />
@@ -115,6 +136,15 @@ export function CreditCardWidget({ summary }: CreditCardWidgetProps) {
           })}
         </div>
       </CardContent>
+
+      {selectedCardId && (
+        <InvoiceDetailSheet
+          cardId={selectedCardId}
+          referenceMonth={currentMonth}
+          isOpen={invoiceOpen}
+          onClose={() => setInvoiceOpen(false)}
+        />
+      )}
     </Card>
   );
 }

@@ -23,10 +23,10 @@ export function TransactionList({ transactions, userId, onDelete }: TransactionL
 
   if (transactions.length === 0) {
     return (
-      <EmptyState 
-        icon={ReceiptText} 
-        title="Nenhuma transação encontrada" 
-        description="Ajuste os filtros ou crie uma nova transação." 
+      <EmptyState
+        icon={ReceiptText}
+        title="Nenhuma transação encontrada"
+        description="Ajuste os filtros ou crie uma nova transação."
       />
     );
   }
@@ -34,14 +34,13 @@ export function TransactionList({ transactions, userId, onDelete }: TransactionL
   return (
     <div className="flex flex-col gap-3 pb-8">
       {transactions.map((transaction) => (
-         <div key={transaction.id} className="relative group/wrapper">
-            <TransactionListItem 
-              transaction={transaction} 
-              formatCurrency={formatCurrency} 
-              userId={userId} 
-              onDelete={onDelete}
-              className="group-hover/wrapper:pr-[100px] transition-all duration-300"
-            />
+        <div key={transaction.id} className="relative group/wrapper">
+          <TransactionListItem
+            transaction={transaction}
+            formatCurrency={formatCurrency}
+            userId={userId}
+            onDelete={onDelete}
+          />
         </div>
       ))}
     </div>

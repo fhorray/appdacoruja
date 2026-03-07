@@ -20,6 +20,7 @@ export interface TransactionFilters {
   tipo?: string;
   status?: string;
   responsavel?: string;
+  creditCardId?: string;
 }
 
 /* Helper to get user */
@@ -61,12 +62,24 @@ export async function getTransactionsAction(arg?: string | TransactionFilters) {
   if (filters?.responsavel) {
     conditions.push(eq(transactions.responsible, filters.responsavel));
   }
+  if (filters?.creditCardId) {
+    conditions.push(eq(transactions.creditCardId, filters.creditCardId));
+  }
 
   const db = await getDb();
-  return db.select()
+  const results = await db.select({
+    transaction: transactions,
+    cardName: creditCards.name,
+  })
     .from(transactions)
+    .leftJoin(creditCards, eq(transactions.creditCardId, creditCards.id))
     .where(and(...conditions))
     .orderBy(desc(transactions.date));
+
+  return results.map(r => ({
+    ...r.transaction,
+    cardName: r.cardName
+  }));
 }
 
 export async function createTransactionAction(data: InsertTransaction) {
@@ -300,7 +313,7 @@ export async function getDashboardDataAction() {
   const despesasMesAnterior = allTransactions
     .filter(t => t.month === lastMonthStr && t.type === 'expense')
     .reduce((sum, t) => sum + Number(t.amount), 0);
-  
+
   // --- Enhanced Insights ---
   const insights = [];
 
@@ -329,14 +342,14 @@ export async function getDashboardDataAction() {
     .forEach(t => {
       categorySpending[t.category] = (categorySpending[t.category] || 0) + Number(t.amount);
     });
-  
+
   const topCategory = Object.entries(categorySpending).sort((a, b) => b[1] - a[1])[0];
   if (topCategory && topCategory[1] > (0.4 * despesasMes)) {
-     insights.push({
-         type: 'info',
-         title: 'Foco em ' + topCategory[0],
-         message: `${topCategory[0]} representa ${( (topCategory[1] / despesasMes) * 100).toFixed(0)}% dos seus gastos este mês.`
-     });
+    insights.push({
+      type: 'info',
+      title: 'Foco em ' + topCategory[0],
+      message: `${topCategory[0]} representa ${((topCategory[1] / despesasMes) * 100).toFixed(0)}% dos seus gastos este mês.`
+    });
   }
 
   const receitasMes = allTransactions
@@ -345,16 +358,16 @@ export async function getDashboardDataAction() {
 
   // 3. Committed Salary Insight
   const totalCommitted = userRecurringBills.reduce((sum, b) => sum + Number(b.amount), 0);
- 
+
   if (receitasMes > 0) {
-      const perc = (totalCommitted / receitasMes) * 100;
-      if (perc > 50) {
-        insights.push({
-            type: 'warning',
-            title: 'Comprometimento Alto',
-            message: `Suas contas fixas ocupam ${perc.toFixed(0)}% da sua renda. Tente reduzir assinaturas.`
-        });
-      }
+    const perc = (totalCommitted / receitasMes) * 100;
+    if (perc > 50) {
+      insights.push({
+        type: 'warning',
+        title: 'Comprometimento Alto',
+        message: `Suas contas fixas ocupam ${perc.toFixed(0)}% da sua renda. Tente reduzir assinaturas.`
+      });
+    }
   }
 
   const despesasAno = allTransactions
@@ -477,26 +490,26 @@ export async function getDashboardDataAction() {
 
   userCreditCards.forEach(card => {
     creditCardSummary.totalLimit += card.creditLimit;
-    
+
     // Transactions for this card this month
     const cardTransactions = allTransactions.filter(t => t.creditCardId === card.id && t.month === currentMonthStr);
     const invoiceTotal = cardTransactions.reduce((acc, t) => acc + Number(t.amount), 0);
-    
+
     // Existing invoice record?
     const existingInvoice = userInvoices.find(inv => inv.creditCardId === card.id);
     const finalAmount = existingInvoice ? existingInvoice.totalAmount : invoiceTotal;
-    
+
     creditCardSummary.totalUsed += finalAmount;
-    
+
     creditCardSummary.cards.push({
-        id: card.id,
-        name: card.name,
-        brand: card.brand,
-        color: card.color,
-        limit: card.creditLimit,
-        used: finalAmount,
-        dueDay: card.dueDay,
-        closingDay: card.closingDay
+      id: card.id,
+      name: card.name,
+      brand: card.brand,
+      color: card.color,
+      limit: card.creditLimit,
+      used: finalAmount,
+      dueDay: card.dueDay,
+      closingDay: card.closingDay
     });
   });
 
@@ -529,13 +542,13 @@ export async function getDashboardDataAction() {
     budgetAlerts,
     committedAmount: totalCommitted,
     upcomingBills: userRecurringBills
-        .sort((a, b) => {
-            const today = new Date().getDate();
-            const aDiff = a.dueDay >= today ? a.dueDay - today : a.dueDay + 31 - today;
-            const bDiff = b.dueDay >= today ? b.dueDay - today : b.dueDay + 31 - today;
-            return aDiff - bDiff;
-        })
-        .slice(0, 3),
+      .sort((a, b) => {
+        const today = new Date().getDate();
+        const aDiff = a.dueDay >= today ? a.dueDay - today : a.dueDay + 31 - today;
+        const bDiff = b.dueDay >= today ? b.dueDay - today : b.dueDay + 31 - today;
+        return aDiff - bDiff;
+      })
+      .slice(0, 3),
     insights,
     creditCardSummary
   };

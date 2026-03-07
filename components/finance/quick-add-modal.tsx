@@ -55,8 +55,8 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
 
   const onDescriptionChange = (desc: string) => {
     const suggested = suggestCategory(desc);
-    setFormData(prev => ({ 
-      ...prev, 
+    setFormData(prev => ({
+      ...prev,
       description: desc,
       category: (desc.length > 2 && suggested) ? suggested : prev.category
     }));
@@ -208,12 +208,12 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50">
-      <div className="bg-white rounded-t-2xl sm:rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-t-md sm:rounded-md shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
         <div className="p-4 sm:p-6 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white z-10">
           <h3 className="text-xl font-bold text-gray-900">Nova Transação</h3>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-md transition-colors"
           >
             <X className="w-5 h-5 text-gray-500" />
           </button>
@@ -224,7 +224,7 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
             <button
               type="button"
               onClick={() => setFormData({ ...formData, type: 'expense', category: '' })}
-              className={`py-3 px-4 rounded-lg font-medium transition-all shadow-sm ${formData.type === 'expense'
+              className={`py-3 px-4 rounded-md font-medium transition-all shadow-sm ${formData.type === 'expense'
                 ? 'bg-red-600 text-white shadow'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow'
                 }`}
@@ -234,7 +234,7 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
             <button
               type="button"
               onClick={() => setFormData({ ...formData, type: 'income', category: '' })}
-              className={`py-3 px-4 rounded-lg font-medium transition-all shadow-sm ${formData.type === 'income'
+              className={`py-3 px-4 rounded-md font-medium transition-all shadow-sm ${formData.type === 'income'
                 ? 'bg-green-600 text-white shadow'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow'
                 }`}
@@ -252,7 +252,7 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
               step="0.01"
               value={formData.amount}
               onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
               placeholder="0,00"
               required
               autoFocus
@@ -267,7 +267,7 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
               type="text"
               value={formData.description}
               onChange={(e) => onDescriptionChange(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Ex: Conta de luz"
               required
             />
@@ -286,7 +286,7 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
                   setFormData({ ...formData, category: e.target.value });
                 }
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             >
               <option value="">Selecione</option>
@@ -302,19 +302,19 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   placeholder="Nome da nova categoria"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <button
                   type="button"
                   onClick={handleAddCategory}
-                  className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-sm font-medium shadow-sm hover:shadow"
+                  className="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-all text-sm font-medium shadow-sm hover:shadow"
                 >
                   OK
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowNewCategory(false)}
-                  className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all text-sm font-medium shadow-sm hover:shadow"
+                  className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-all text-sm font-medium shadow-sm hover:shadow"
                 >
                   ✕
                 </button>
@@ -330,7 +330,7 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
               type="date"
               value={formData.date}
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
               required
             />
           </div>
@@ -342,7 +342,7 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
             <select
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {STATUS_OPTIONS.map(status => (
                 <option key={status.value} value={status.value}>{status.label}</option>
@@ -350,7 +350,7 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
             </select>
           </div>
 
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+          <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
             <label className="flex items-center gap-2 cursor-pointer">
               <Input
                 type="checkbox"
@@ -380,7 +380,7 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
                     value={formData.recurrenceMonths}
                     onChange={(e) => setFormData({ ...formData, recurrenceMonths: e.target.value })}
                     placeholder="Número de meses"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   />
                   <span className="flex items-center text-sm text-gray-600">meses</span>
                 </div>
@@ -403,14 +403,14 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
                 <select
                   value={formData.paymentMethod}
                   onChange={(e) => {
-                      const val = e.target.value;
-                      if (val !== 'credit_card') {
-                          setFormData({ ...formData, paymentMethod: val, creditCardId: '', status: 'paid' });
-                      } else {
-                          setFormData({ ...formData, paymentMethod: val, status: 'pending' });
-                      }
+                    const val = e.target.value;
+                    if (val !== 'credit_card') {
+                      setFormData({ ...formData, paymentMethod: val, creditCardId: '', status: 'paid' });
+                    } else {
+                      setFormData({ ...formData, paymentMethod: val, status: 'pending' });
+                    }
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Selecione</option>
                   {PAYMENT_METHODS.map(method => (
@@ -421,20 +421,20 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
 
               {formData.paymentMethod === 'credit_card' && (
                 <div className="animate-in slide-in-from-top-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Cartão de Crédito
-                    </label>
-                    <select
+                  </label>
+                  <select
                     value={formData.creditCardId}
                     onChange={(e) => setFormData({ ...formData, creditCardId: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
-                    >
+                  >
                     <option value="">Selecione o cartão</option>
                     {activeCards.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
+                      <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
-                    </select>
+                  </select>
                 </div>
               )}
 
@@ -451,7 +451,7 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
                       setFormData({ ...formData, responsible: e.target.value });
                     }
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Selecione</option>
                   {activeResponsiblePersons.map(resp => (
@@ -466,19 +466,19 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
                       value={newResponsavelName}
                       onChange={(e) => setNewResponsavelName(e.target.value)}
                       placeholder="Nome do novo responsável"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                     <button
                       type="button"
                       onClick={handleAddResponsavel}
-                      className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-sm font-medium shadow-sm hover:shadow"
+                      className="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-all text-sm font-medium shadow-sm hover:shadow"
                     >
                       OK
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowNewResponsavel(false)}
-                      className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all text-sm font-medium shadow-sm hover:shadow"
+                      className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-all text-sm font-medium shadow-sm hover:shadow"
                     >
                       ✕
                     </button>
@@ -492,14 +492,14 @@ export function QuickAddModal({ onClose, onSave }: QuickAddModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="w-full sm:w-auto px-6 py-2.5 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all font-medium shadow-sm hover:shadow"
+              className="w-full sm:w-auto px-6 py-2.5 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-all font-medium shadow-sm hover:shadow"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={createTransaction.isPending}
-              className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
+              className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all font-medium shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
             >
               {createTransaction.isPending ? 'Salvando...' : 'Salvar'}
             </button>

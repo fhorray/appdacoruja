@@ -3,11 +3,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SelectRecurringBill } from "@/server/database/schemas";
 import { cn } from "@/lib/utils";
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
 } from "@/components/ui/tooltip";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -20,7 +20,7 @@ export function PaymentCalendar({ bills }: PaymentCalendarProps) {
   const today = new Date();
   const currentMonthName = format(today, 'MMMM', { locale: ptBR });
   const currentDay = today.getDate();
-  
+
   // Create an array for days of the month (simplified 31 days)
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
 
@@ -52,10 +52,10 @@ export function PaymentCalendar({ bills }: PaymentCalendarProps) {
                   <TooltipTrigger asChild>
                     <div
                       className={cn(
-                        "h-12 flex flex-col items-center justify-center rounded-lg border text-sm transition-all relative cursor-default",
-                        isToday ? "border-primary bg-primary/5 font-bold text-primary ring-1 ring-primary" : 
-                        hasBills ? "border-muted-foreground/20 bg-background hover:bg-muted/20" : 
-                        "border-transparent bg-muted/10 text-muted-foreground/50 opacity-50"
+                        "h-12 flex flex-col items-center justify-center rounded-md border text-sm transition-all relative cursor-default",
+                        isToday ? "border-primary bg-primary/5 font-bold text-primary ring-1 ring-primary" :
+                          hasBills ? "border-muted-foreground/20 bg-background hover:bg-muted/20" :
+                            "border-transparent bg-muted/10 text-muted-foreground/50 opacity-50"
                       )}
                     >
                       <span className={cn(
@@ -64,13 +64,13 @@ export function PaymentCalendar({ bills }: PaymentCalendarProps) {
                       )}>
                         {day}
                       </span>
-                      
+
                       {hasBills && (
                         <div className="flex gap-0.5 mt-1 -mb-1">
                           {dayBills.slice(0, 3).map((bill, i) => (
-                            <div 
-                              key={bill.id} 
-                              className="w-1.5 h-1.5 rounded-full" 
+                            <div
+                              key={bill.id}
+                              className="w-1.5 h-1.5 rounded-full"
                               style={{ backgroundColor: bill.color || "#3b82f6" }}
                             />
                           ))}
@@ -81,7 +81,7 @@ export function PaymentCalendar({ bills }: PaymentCalendarProps) {
                       )}
 
                       {isToday && (
-                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
+                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
                       )}
                     </div>
                   </TooltipTrigger>
@@ -92,13 +92,13 @@ export function PaymentCalendar({ bills }: PaymentCalendarProps) {
                       </p>
                       {dayBills.map(bill => (
                         <div key={bill.id} className="flex items-center justify-between gap-3 text-sm">
-                           <div className="flex items-center gap-2 overflow-hidden">
-                              <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: bill.color || "#3b82f6" }} />
-                              <span className="truncate">{bill.name}</span>
-                           </div>
-                           <span className="font-semibold shrink-0">
-                               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(bill.amount)}
-                           </span>
+                          <div className="flex items-center gap-2 overflow-hidden">
+                            <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: bill.color || "#3b82f6" }} />
+                            <span className="truncate">{bill.name}</span>
+                          </div>
+                          <span className="font-semibold shrink-0">
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(bill.amount)}
+                          </span>
                         </div>
                       ))}
                     </TooltipContent>
@@ -110,18 +110,18 @@ export function PaymentCalendar({ bills }: PaymentCalendarProps) {
         </TooltipProvider>
 
         <div className="mt-6 flex flex-wrap gap-4 text-[10px] sm:text-xs">
-            <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-primary/10 border border-primary" />
-                <span className="text-muted-foreground">Hoje</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-background border border-muted-foreground/20" />
-                <span className="text-muted-foreground">Com Conta</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-blue-500" />
-                <span className="text-muted-foreground">Assinatura / Conta Fixa</span>
-            </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded bg-primary/10 border border-primary" />
+            <span className="text-muted-foreground">Hoje</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded bg-background border border-muted-foreground/20" />
+            <span className="text-muted-foreground">Com Conta</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-blue-500" />
+            <span className="text-muted-foreground">Assinatura / Conta Fixa</span>
+          </div>
         </div>
       </CardContent>
     </Card>

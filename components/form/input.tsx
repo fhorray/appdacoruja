@@ -50,7 +50,7 @@ const InputField = ({ label, icon, description, ...props }: InputProps) => {
           aria-invalid={isInvalid}
           {...props}
           className={cn(
-            "h-12 border-none bg-muted/30 focus-visible:ring-1 focus-visible:ring-primary/20",
+            "h-10 border-none bg-muted/30 focus-visible:ring-1 focus-visible:ring-primary/20",
             Icon && "pl-12",
             props.className
           )}

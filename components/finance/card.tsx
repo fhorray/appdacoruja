@@ -18,10 +18,10 @@ export function Card({ title, value, icon: Icon, trend = 'neutral', subtitle, cl
   };
 
   return (
-    <div className={cn("bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition-all hover:scale-[1.02]", className)}>
+    <div className={cn("bg-white rounded-md shadow-md border border-gray-100 p-6 hover:shadow-lg transition-all hover:scale-[1.02]", className)}>
       <div className="flex items-start justify-between mb-3">
         <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">{title}</p>
-        <div className={cn("p-2.5 rounded-xl shadow-sm", trendColors[trend])}>
+        <div className={cn("p-2.5 rounded-md shadow-sm", trendColors[trend])}>
           <Icon className="w-5 h-5" />
         </div>
       </div>

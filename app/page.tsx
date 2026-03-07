@@ -2,11 +2,20 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, PieChart, Target, Zap, Shield, PiggyBank, CreditCard, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { initAuth } from "@/lib/auth/server";
+import { headers } from "next/headers";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const auth = await initAuth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  const buttonLink = session ? "/dashboard" : "/auth";
+  const buttonText = session ? "Ir para o Dashboard" : "Começar Agora";
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 flex flex-col overflow-hidden">
-      
+
       {/* Background Ambience */}
       <div className="fixed inset-0 z-0 pointer-events-none w-full h-full overflow-hidden">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px]" />
@@ -24,9 +33,9 @@ export default function LandingPage() {
                 Entrar
               </Button>
             </Link>
-            <Link href="/auth">
+            <Link href={buttonLink}>
               <Button className="h-9 px-4 rounded-full shadow-sm bg-primary text-primary-foreground hover:bg-primary/90">
-                Começar Agora
+                {buttonText}
               </Button>
             </Link>
           </div>
@@ -34,7 +43,7 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-1 w-full flex flex-col relative z-10 pt-24 pb-16">
-        
+
         {/* Hero Section */}
         <section className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full pt-16 pb-20 md:pt-24 md:pb-32 flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider mb-8 border border-primary/20">
@@ -48,9 +57,9 @@ export default function LandingPage() {
             Abandone as planilhas complexas. App da Coruja é a plataforma unificada que transforma seu planejamento financeiro de algo tedioso para uma experiência fluida e poderosa.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center gap-4 w-full justify-center">
-            <Link href="/auth">
+            <Link href={buttonLink}>
               <Button size="lg" className="rounded-full h-12 px-8 text-base shadow-lg shadow-primary/20 gap-2 w-full sm:w-auto">
-                Acessar Plataforma <ArrowRight className="w-4 h-4" />
+                {session ? "Acessar Dashboard" : "Começar Agora"} <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
             <Link href="/auth">
@@ -69,16 +78,16 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            
-            <FeatureCard 
+
+            <FeatureCard
               icon={<Target className="w-6 h-6" />}
               title="Metas e Caixinhas"
               description="Separe seu dinheiro com propósito. Crie caixinhas para viagens, emergências e acompanhe o progresso."
               color="text-emerald-500"
               bg="bg-emerald-500/10"
             />
-            
-            <FeatureCard 
+
+            <FeatureCard
               icon={<PieChart className="w-6 h-6" />}
               title="Orçamento Inteligente"
               description="Defina limites por categoria e receba insights sobre seus gastos antes de estourar o orçamento."
@@ -86,7 +95,7 @@ export default function LandingPage() {
               bg="bg-blue-500/10"
             />
 
-            <FeatureCard 
+            <FeatureCard
               icon={<PiggyBank className="w-6 h-6" />}
               title="Projetos Financeiros"
               description="Simule sua independência financeira e planeje projetos de longo prazo com projeção de rendimentos."
@@ -94,7 +103,7 @@ export default function LandingPage() {
               bg="bg-amber-500/10"
             />
 
-            <FeatureCard 
+            <FeatureCard
               icon={<CreditCard className="w-6 h-6" />}
               title="Gestão de Cartões"
               description="Controle faturas, limites e transações parceladas. Uma visão completa antes da fatura fechar."
@@ -102,7 +111,7 @@ export default function LandingPage() {
               bg="bg-indigo-500/10"
             />
 
-            <FeatureCard 
+            <FeatureCard
               icon={<Zap className="w-6 h-6" />}
               title="Contas Fixas e Assinaturas"
               description="Nunca mais pague multas. Calendário inteligente que mostra exatamente o quanto da sua renda está comprometida."
@@ -110,7 +119,7 @@ export default function LandingPage() {
               bg="bg-rose-500/10"
             />
 
-            <FeatureCard 
+            <FeatureCard
               icon={<Shield className="w-6 h-6" />}
               title="Privacidade Absoluta"
               description="Seus dados são seus. Utilizamos tecnologias modernas para garantir máxima segurança das suas informações financeiras."
@@ -123,10 +132,10 @@ export default function LandingPage() {
 
         {/* Call to action */}
         <section className="px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full py-20 mt-10">
-          <div className="rounded-3xl bg-gradient-to-b from-card to-background border shadow-xl p-8 md:p-12 text-center relative overflow-hidden">
+          <div className="rounded-md bg-gradient-to-b from-card to-background border shadow-xl p-8 md:p-12 text-center relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3" />
-            
+
             <h2 className="text-2xl md:text-4xl font-bold tracking-tight relative z-10 text-balance">
               Pronto para evoluir a forma como você lida com dinheiro?
             </h2>
@@ -134,11 +143,11 @@ export default function LandingPage() {
               Junte-se ao App da Coruja e assuma o controle hoje mesmo. Rápido, seguro e pensado para você.
             </p>
             <div className="mt-8 relative z-10">
-               <Link href="/auth">
-                <Button size="lg" className="rounded-full shadow-lg h-12 px-8">
-                  Criar Conta Gratuita <ChevronRight className="w-4 h-4 ml-1" />
+              <Link href={buttonLink}>
+                <Button size="lg" className="rounded-full shadow-lg h-12 px-8 text-base">
+                  {session ? "Voltar ao Dashboard" : "Criar Conta Gratuita"} <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
-               </Link>
+              </Link>
             </div>
           </div>
         </section>
@@ -147,15 +156,15 @@ export default function LandingPage() {
 
       <footer className="border-t border-border mt-auto relative z-10 bg-background/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-           <div className="flex items-center gap-2">
-             <Image src="/icon.png" alt="Icon" width={24} height={24} className="opacity-50 grayscale" />
-             <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} App da Coruja. Todos os direitos reservados.</p>
-           </div>
-           <div className="flex gap-4 text-sm font-medium text-muted-foreground">
-              <Link href="#" className="hover:text-foreground transition-colors">Privacidade</Link>
-              <Link href="#" className="hover:text-foreground transition-colors">Termos</Link>
-              <Link href="#" className="hover:text-foreground transition-colors">Suporte</Link>
-           </div>
+          <div className="flex items-center gap-2">
+            <Image src="/icon.png" alt="Icon" width={24} height={24} className="opacity-50 grayscale" />
+            <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} App da Coruja. Todos os direitos reservados.</p>
+          </div>
+          <div className="flex gap-4 text-sm font-medium text-muted-foreground">
+            <Link href="#" className="hover:text-foreground transition-colors">Privacidade</Link>
+            <Link href="#" className="hover:text-foreground transition-colors">Termos</Link>
+            <Link href="#" className="hover:text-foreground transition-colors">Suporte</Link>
+          </div>
         </div>
       </footer>
 
@@ -165,15 +174,15 @@ export default function LandingPage() {
 
 function FeatureCard({ icon, title, description, color, bg }: { icon: React.ReactNode, title: string, description: string, color: string, bg: string }) {
   return (
-    <div className="group relative bg-card border border-border/50 rounded-2xl p-6 transition-all hover:shadow-lg hover:-translate-y-1 hover:border-border overflow-hidden">
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${bg} ${color}`}>
+    <div className="group relative bg-card border border-border/50 rounded-md p-6 transition-all hover:shadow-lg hover:-translate-y-1 hover:border-border overflow-hidden">
+      <div className={`w-12 h-12 rounded-md flex items-center justify-center mb-4 ${bg} ${color}`}>
         {icon}
       </div>
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
       <p className="text-sm text-muted-foreground leading-relaxed">
         {description}
       </p>
-      <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/5 rounded-2xl transition-colors pointer-events-none" />
+      <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/5 rounded-md transition-colors pointer-events-none" />
     </div>
   );
 }

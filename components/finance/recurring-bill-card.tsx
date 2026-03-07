@@ -2,22 +2,22 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  CalendarClock, 
-  MoreVertical, 
-  Edit2, 
-  Trash2, 
-  Calendar, 
-  Tag, 
+import {
+  CalendarClock,
+  MoreVertical,
+  Edit2,
+  Trash2,
+  Calendar,
+  Tag,
   AlertCircle,
   CreditCard,
   Receipt
 } from "lucide-react";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { SelectRecurringBill } from "@/server/database/schemas";
 import { cn } from "@/lib/utils";
@@ -29,7 +29,7 @@ interface RecurringBillCardProps {
 }
 
 export function RecurringBillCard({ bill, onEdit, onDelete }: RecurringBillCardProps) {
-  const formatCurrency = (val: number) => 
+  const formatCurrency = (val: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
   const today = new Date().getDate();
@@ -39,15 +39,15 @@ export function RecurringBillCard({ bill, onEdit, onDelete }: RecurringBillCardP
   return (
     <Card className="hover:shadow-md transition-shadow group relative overflow-hidden">
       {/* Indicative Color Bar */}
-      <div 
-        className="absolute left-0 top-0 bottom-0 w-1.5" 
+      <div
+        className="absolute left-0 top-0 bottom-0 w-1.5"
         style={{ backgroundColor: bill.color || "#3b82f6" }}
       />
 
       <CardContent className="p-5 pl-7">
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-3">
-            <div 
+            <div
               className="p-2.5 rounded-xl text-white shadow-sm"
               style={{ backgroundColor: bill.color || "#3b82f6" }}
             >
@@ -78,7 +78,7 @@ export function RecurringBillCard({ bill, onEdit, onDelete }: RecurringBillCardP
               <DropdownMenuItem onClick={onEdit}>
                 <Edit2 className="w-4 h-4 mr-2" /> Editar
               </DropdownMenuItem>
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={onDelete}
                 className="text-destructive focus:text-destructive"
               >
@@ -99,10 +99,10 @@ export function RecurringBillCard({ bill, onEdit, onDelete }: RecurringBillCardP
           </div>
 
           <div className={cn(
-            "flex flex-col items-end gap-1 px-3 py-1.5 rounded-lg border transition-colors",
-            isNearDue ? "bg-amber-50 border-amber-200 text-amber-700" : 
-            isOverdue ? "bg-red-50 border-red-200 text-red-700" :
-            "bg-muted/30 border-transparent text-muted-foreground"
+            "flex flex-col items-end gap-1 px-3 py-1.5 rounded-md border transition-colors",
+            isNearDue ? "bg-amber-50 border-amber-200 text-amber-700" :
+              isOverdue ? "bg-red-50 border-red-200 text-red-700" :
+                "bg-muted/30 border-transparent text-muted-foreground"
           )}>
             <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-tight">
               {isNearDue && <AlertCircle className="w-3 h-3 animate-pulse" />}
@@ -116,7 +116,7 @@ export function RecurringBillCard({ bill, onEdit, onDelete }: RecurringBillCardP
 
         {bill.notes && (
           <div className="mt-4 pt-4 border-t border-dashed text-xs text-muted-foreground italic line-clamp-1">
-             "{bill.notes}"
+            "{bill.notes}"
           </div>
         )}
       </CardContent>

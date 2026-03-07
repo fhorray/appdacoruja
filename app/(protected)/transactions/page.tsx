@@ -22,6 +22,7 @@ function TransactionsContent() {
   const [type, setType] = useQueryState('type', { defaultValue: '' });
   const [status, setStatus] = useQueryState('status', { defaultValue: '' });
   const [responsible, setResponsible] = useQueryState('responsible', { defaultValue: '' });
+  const [creditCardId, setCreditCardId] = useQueryState('creditCardId', { defaultValue: '' });
 
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
@@ -29,12 +30,13 @@ function TransactionsContent() {
 
   const applyFilters = (txs: any[]) => {
     return txs.filter(t => {
-       if (month && t.month !== month) return false;
-       if (category && t.category !== category) return false;
-       if (type && t.type !== type) return false;
-       if (status && t.status !== status) return false;
-       if (responsible && t.responsible !== responsible) return false;
-       return true;
+      if (month && t.month !== month) return false;
+      if (category && t.category !== category) return false;
+      if (type && t.type !== type) return false;
+      if (status && t.status !== status) return false;
+      if (responsible && t.responsible !== responsible) return false;
+      if (creditCardId && t.creditCardId !== creditCardId) return false;
+      return true;
     });
   };
 
@@ -45,21 +47,22 @@ function TransactionsContent() {
   };
 
   const handleDelete = async (id: string) => {
-      if(!confirm('Tem certeza?')) return;
-      await deleteTransaction.mutateAsync(id);
+    if (!confirm('Tem certeza?')) return;
+    await deleteTransaction.mutateAsync(id);
   };
 
-  const filters = { month, category, type, status, responsible };
+  const filters = { month, category, type, status, responsible, creditCardId };
 
   const handleFilterChange = (key: string, value: string) => {
-      const emptyValue = value === "all" ? "" : value;
-      switch (key) {
-        case 'month': setMonth(emptyValue || null); break;
-        case 'category': setCategory(emptyValue || null); break;
-        case 'type': setType(emptyValue || null); break;
-        case 'status': setStatus(emptyValue || null); break;
-        case 'responsible': setResponsible(emptyValue || null); break;
-      }
+    const emptyValue = value === "all" ? "" : value;
+    switch (key) {
+      case 'month': setMonth(emptyValue || null); break;
+      case 'category': setCategory(emptyValue || null); break;
+      case 'type': setType(emptyValue || null); break;
+      case 'status': setStatus(emptyValue || null); break;
+      case 'responsible': setResponsible(emptyValue || null); break;
+      case 'creditCardId': setCreditCardId(emptyValue || null); break;
+    }
   };
 
   const handleClearFilters = () => {
@@ -68,6 +71,7 @@ function TransactionsContent() {
     setType(null);
     setStatus(null);
     setResponsible(null);
+    setCreditCardId(null);
   };
 
   return (
@@ -102,11 +106,11 @@ function TransactionsContent() {
 export default function TransactionsPage() {
   return (
     <Suspense fallback={
-        <div className="flex h-[50vh] items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
     }>
-        <TransactionsContent />
+      <TransactionsContent />
     </Suspense>
   );
 }

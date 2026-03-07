@@ -74,7 +74,7 @@ export function CategoryChart({ expenses, incomes, totalIncome, totalExpense }: 
   const incomesWithValue = incomes.filter(r => r.total > 0);
 
   return (
-    <div className="bg-card rounded-2xl shadow-sm border border-border/50 p-6">
+    <div className="bg-card rounded-md shadow-sm border border-border/50 p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-6">
         Distribuição Mensal
       </h3>
@@ -105,9 +105,8 @@ export function CategoryChart({ expenses, incomes, totalIncome, totalExpense }: 
                   return (
                     <div
                       key={index}
-                      className={`h-full flex items-center justify-center text-white font-semibold text-xs transition-all relative group ${
-                        isFirst ? 'rounded-l-lg' : ''
-                      } ${isLast ? 'rounded-r-lg' : ''}`}
+                      className={`h-full flex items-center justify-center text-white font-semibold text-xs transition-all relative group ${isFirst ? 'rounded-l-lg' : ''
+                        } ${isLast ? 'rounded-r-lg' : ''}`}
                       style={{
                         width: `${widthPercentage}%`,
                         backgroundColor: incomeColorMap[item.category],

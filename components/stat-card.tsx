@@ -14,18 +14,18 @@ interface StatCardProps {
   className?: string
 }
 
-export function StatCard({ 
-  title, 
-  value, 
-  icon: Icon, 
-  trend, 
-  trendValue, 
+export function StatCard({
+  title,
+  value,
+  icon: Icon,
+  trend,
+  trendValue,
   description,
-  className 
+  className
 }: StatCardProps) {
   return (
-    <Card className={cn("overflow-hidden transition-all border-border/50 shadow-sm hover:shadow-md rounded-2xl", className)}>
-      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+    <Card className={cn("overflow-hidden transition-all border-border/50 shadow-sm hover:shadow-md rounded-md", className)}>
+      <CardHeader className="px-4 flex flex-row items-center justify-between pb-2 space-y-0">
         <CardTitle className="text-sm font-medium text-muted-foreground/80">
           {title}
         </CardTitle>
@@ -33,13 +33,13 @@ export function StatCard({
           <Icon className="h-5 w-5 text-primary" />
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4">
         <div className="text-2xl font-bold tracking-tight text-foreground">{value}</div>
-        
+
         {(trendValue || description) && (
           <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
             {trend && trendValue && (
-              <Badge 
+              <Badge
                 variant={trend === "positive" ? "default" : trend === "negative" ? "destructive" : "secondary"}
                 className={cn(
                   "font-normal px-1.5 py-0.5 h-auto",

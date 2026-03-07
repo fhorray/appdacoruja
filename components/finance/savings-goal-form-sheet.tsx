@@ -8,7 +8,7 @@ import { SelectSavingsGoal } from "@/server/database/schemas";
 import { toast } from "sonner";
 
 const GOAL_ICONS = [
-  "Target", "PiggyBank", "Car", "Plane", "Home", "GraduationCap", 
+  "Target", "PiggyBank", "Car", "Plane", "Home", "GraduationCap",
   "Smartphone", "Laptop", "Heart", "Star", "Gift", "Briefcase"
 ];
 
@@ -119,11 +119,11 @@ export function SavingsGoalFormSheet({ isOpen, onClose, userId, initialData }: S
                   onChange: ({ value }) => !value ? "Nome é obrigatório" : undefined,
                 }}
                 children={(field) => (
-                  <field.InputField 
-                    label="Nome da Caixinha" 
-                    icon={Target as any} 
-                    placeholder="Ex: Viagem para Europa" 
-                    className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                  <field.InputField
+                    label="Nome da Caixinha"
+                    icon={Target as any}
+                    placeholder="Ex: Viagem para Europa"
+                    className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-md"
                   />
                 )}
               />
@@ -132,16 +132,16 @@ export function SavingsGoalFormSheet({ isOpen, onClose, userId, initialData }: S
                 name="targetAmount"
                 validators={{
                   onChange: ({ value }) => {
-                     const num = Number(value);
-                     if (isNaN(num) || num <= 0) return "O valor deve ser maior que zero";
-                     return undefined;
+                    const num = Number(value);
+                    if (isNaN(num) || num <= 0) return "O valor deve ser maior que zero";
+                    return undefined;
                   }
                 }}
                 children={(field) => (
-                  <field.MoneyField 
-                    label="Valor da Meta" 
-                    placeholder="R$ 5.000,00" 
-                    className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                  <field.MoneyField
+                    label="Valor da Meta"
+                    placeholder="R$ 5.000,00"
+                    className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-md"
                   />
                 )}
               />
@@ -151,10 +151,10 @@ export function SavingsGoalFormSheet({ isOpen, onClose, userId, initialData }: S
                   name="initialAmount"
                   validators={{
                     onChange: ({ value }) => {
-                       if (!value) return undefined;
-                       const num = Number(value);
-                       if (isNaN(num) || num < 0) return "O valor não pode ser negativo";
-                       return undefined;
+                      if (!value) return undefined;
+                      const num = Number(value);
+                      if (isNaN(num) || num < 0) return "O valor não pode ser negativo";
+                      return undefined;
                     }
                   }}
                   children={(field) => (
@@ -166,11 +166,11 @@ export function SavingsGoalFormSheet({ isOpen, onClose, userId, initialData }: S
               <form.AppField
                 name="targetDate"
                 children={(field) => (
-                  <field.InputField 
-                    type="date" 
-                    label="Data Alvo (Opcional)" 
-                    icon={CalendarDays as any} 
-                    className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                  <field.InputField
+                    type="date"
+                    label="Data Alvo (Opcional)"
+                    icon={CalendarDays as any}
+                    className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-md"
                   />
                 )}
               />
@@ -183,25 +183,25 @@ export function SavingsGoalFormSheet({ isOpen, onClose, userId, initialData }: S
               />
 
               <div className="space-y-3">
-                 <label className="text-sm font-medium leading-none flex items-center gap-2">
-                    <Palette className="w-4 h-4 text-muted-foreground" /> Cor da Caixinha
-                 </label>
-                 <form.AppField
-                    name="color"
-                    children={(field) => (
-                        <div className="flex flex-wrap gap-3">
-                            {PREDEFINED_COLORS.map(color => (
-                                <button
-                                    key={color}
-                                    type="button"
-                                    className={`w-8 h-8 rounded-full transition-all flex items-center justify-center ${field.state.value === color ? 'ring-2 ring-primary ring-offset-2 scale-110' : 'hover:scale-110'}`}
-                                    style={{ backgroundColor: color }}
-                                    onClick={() => field.handleChange(color)}
-                                />
-                            ))}
-                        </div>
-                    )}
-                 />
+                <label className="text-sm font-medium leading-none flex items-center gap-2">
+                  <Palette className="w-4 h-4 text-muted-foreground" /> Cor da Caixinha
+                </label>
+                <form.AppField
+                  name="color"
+                  children={(field) => (
+                    <div className="flex flex-wrap gap-3">
+                      {PREDEFINED_COLORS.map(color => (
+                        <button
+                          key={color}
+                          type="button"
+                          className={`w-8 h-8 rounded-full transition-all flex items-center justify-center ${field.state.value === color ? 'ring-2 ring-primary ring-offset-2 scale-110' : 'hover:scale-110'}`}
+                          style={{ backgroundColor: color }}
+                          onClick={() => field.handleChange(color)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                />
               </div>
 
               <form.AppField
@@ -209,7 +209,7 @@ export function SavingsGoalFormSheet({ isOpen, onClose, userId, initialData }: S
                 children={(field) => (
                   <field.SelectField
                     label="Ícone"
-                    className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                    className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-md"
                     options={GOAL_ICONS.map(i => ({ value: i, label: i }))}
                   />
                 )}
@@ -224,10 +224,10 @@ export function SavingsGoalFormSheet({ isOpen, onClose, userId, initialData }: S
           <Button variant="outline" onClick={onClose} className="">
             Cancelar
           </Button>
-          <Button 
-            type="submit" 
-            form="savings-goal-form" 
-            className="w-full"
+          <Button
+            type="submit"
+            form="savings-goal-form"
+            className=""
             disabled={isEditing ? updateSavingsGoal.isPending : createSavingsGoal.isPending}
           >
             {isEditing ? (updateSavingsGoal.isPending ? "Salvando..." : "Salvar") : (createSavingsGoal.isPending ? "Criando..." : "Criar")}

@@ -27,7 +27,7 @@ export function DashboardHeader({
   const userId = user?.id as string;
 
   return (
-    <div className="relative w-full rounded-[2rem] bg-zinc-950 text-white p-6 shadow-xl mb-6 overflow-hidden">
+    <div className="relative w-full rounded-[1rem] bg-zinc-950 text-white p-6 shadow-xl mb-6 overflow-hidden">
       {/* Decorative gradients */}
       <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -37,14 +37,14 @@ export function DashboardHeader({
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2 text-zinc-400">
               <span className="text-sm font-medium">Saldo Atual</span>
-              <button 
+              <button
                 onClick={() => setIsPrivate(!isPrivate)}
                 className="hover:text-white transition-colors p-1"
               >
                 {isPrivate ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            <h1 className="text-4xl font-bold tracking-tight">
+            <h1 className="text-3xl font-bold tracking-tight">
               {formatCurrency(saldo)}
             </h1>
           </div>
@@ -57,7 +57,7 @@ export function DashboardHeader({
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="flex items-center gap-3 bg-zinc-900/50 rounded-2xl p-3 border border-white/5">
+          <div className="flex items-center gap-3 bg-zinc-900/50 rounded-md p-3 border border-white/5">
             <div className="bg-emerald-500/20 p-2 rounded-full">
               <ArrowUpRight className="w-4 h-4 text-emerald-400" />
             </div>
@@ -66,7 +66,7 @@ export function DashboardHeader({
               <span className="text-sm font-semibold text-zinc-100">{formatCurrency(receitas)}</span>
             </div>
           </div>
-          <div className="flex items-center gap-3 bg-zinc-900/50 rounded-2xl p-3 border border-white/5">
+          <div className="flex items-center gap-3 bg-zinc-900/50 rounded-md p-3 border border-white/5">
             <div className="bg-red-500/20 p-2 rounded-full">
               <ArrowDownRight className="w-4 h-4 text-red-400" />
             </div>

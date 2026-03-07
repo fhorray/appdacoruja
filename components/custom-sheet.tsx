@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import {
   Sheet,
   SheetContent,
@@ -47,7 +48,7 @@ export function CustomSheet({
 }: CustomSheetProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isMobile = useIsMobile();
-  
+
   const open = externalOpen !== undefined ? externalOpen : internalOpen;
   const setOpen = setExternalOpen || setInternalOpen;
   const close = () => setOpen(false);
@@ -56,20 +57,20 @@ export function CustomSheet({
     return (
       <Drawer open={open} onOpenChange={setOpen}>
         {children && <DrawerTrigger asChild>{children}</DrawerTrigger>}
-        <DrawerContent className={className}>
-          <DrawerHeader className="text-left">
+        <DrawerContent className={cn("max-h-[95vh] flex flex-col", className)}>
+          <DrawerHeader className="text-left shrink-0">
             {title && <DrawerTitle>{title}</DrawerTitle>}
             {description && <DrawerDescription>{description}</DrawerDescription>}
           </DrawerHeader>
-          <ScrollArea className="max-h-[70vh] px-4">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 px-4 pb-4">
             {content && (
-              <div className="grid gap-4 py-4">
+              <div className="h-full">
                 {typeof content === "function" ? content({ close }) : content}
               </div>
             )}
-          </ScrollArea>
+          </div>
           {footer && (
-            <DrawerFooter className="pt-2">
+            <DrawerFooter className="shrink-0 pt-2 border-t bg-background">
               {typeof footer === "function" ? footer({ close }) : footer}
             </DrawerFooter>
           )}

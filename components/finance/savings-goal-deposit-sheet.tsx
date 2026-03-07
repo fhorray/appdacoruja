@@ -61,7 +61,7 @@ export function SavingsGoalDepositSheet({ isOpen, onClose, userId, goal, initial
           <div className="flex bg-muted p-1 rounded-xl">
             <button
               className={cn(
-                "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all",
+                "flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition-all",
                 type === 'deposit' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
               )}
               onClick={() => setType('deposit')}
@@ -71,7 +71,7 @@ export function SavingsGoalDepositSheet({ isOpen, onClose, userId, goal, initial
             </button>
             <button
               className={cn(
-                "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all",
+                "flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition-all",
                 type === 'withdraw' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
               )}
               onClick={() => setType('withdraw')}
@@ -93,13 +93,13 @@ export function SavingsGoalDepositSheet({ isOpen, onClose, userId, goal, initial
             onSubmit={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              
+
               if (type === 'withdraw') {
-                 const amount = Number(form.getFieldValue('amount'));
-                 if (amount > goal.currentAmount) {
-                     toast.error("O valor da retirada não pode ser maior que o saldo atual.");
-                     return;
-                 }
+                const amount = Number(form.getFieldValue('amount'));
+                if (amount > goal.currentAmount) {
+                  toast.error("O valor da retirada não pode ser maior que o saldo atual.");
+                  return;
+                }
               }
 
               form.handleSubmit();
@@ -110,9 +110,9 @@ export function SavingsGoalDepositSheet({ isOpen, onClose, userId, goal, initial
               name="amount"
               validators={{
                 onChange: ({ value }) => {
-                    const num = Number(value);
-                    if (isNaN(num) || num <= 0) return "O valor deve ser maior que zero";
-                    return undefined;
+                  const num = Number(value);
+                  if (isNaN(num) || num <= 0) return "O valor deve ser maior que zero";
+                  return undefined;
                 }
               }}
               children={(field) => (
@@ -127,9 +127,9 @@ export function SavingsGoalDepositSheet({ isOpen, onClose, userId, goal, initial
           <Button variant="outline" onClick={onClose} className="">
             Cancelar
           </Button>
-          <Button 
-            type="submit" 
-            form="savings-deposit-form" 
+          <Button
+            type="submit"
+            form="savings-deposit-form"
             className=""
             disabled={updateGoalAmount.isPending}
           >
