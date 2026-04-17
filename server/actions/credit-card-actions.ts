@@ -25,6 +25,9 @@ export async function createCreditCardAction(data: InsertCreditCard) {
   const result = await db.insert(creditCards).values({
     ...data,
     userId: user.id,
+    creditLimit: Number(data.creditLimit),
+    closingDay: Number(data.closingDay),
+    dueDay: Number(data.dueDay),
   }).returning();
 
   revalidatePath("/cards");
@@ -39,6 +42,9 @@ export async function updateCreditCardAction(id: string, data: Partial<InsertCre
   const result = await db.update(creditCards)
     .set({
       ...data,
+      creditLimit: data.creditLimit !== undefined ? Number(data.creditLimit) : undefined,
+      closingDay: data.closingDay !== undefined ? Number(data.closingDay) : undefined,
+      dueDay: data.dueDay !== undefined ? Number(data.dueDay) : undefined,
       updatedAt: new Date(),
     })
     .where(and(eq(creditCards.id, id), eq(creditCards.userId, user.id)))

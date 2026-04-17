@@ -16,28 +16,16 @@ import { CommittedSalaryWidget } from '@/components/finance/committed-salary-wid
 import { InsightsWidget } from '@/components/finance/insights-widget';
 import { CreditCardWidget } from '@/components/finance/credit-card-widget';
 import { Button } from '@/components/ui/button';
-import { getDashboardDataAction } from "@/server/actions/finance-actions";
 import { useAuth } from '@/hooks/use-auth';
+import { useDashboardData } from '@/hooks/use-dashboard';
+import { PerformanceChart } from '@/components/finance/performance-chart';
+import { TransactionFormModal } from '@/components/finance/transaction-form-sheet';
+import { PlusCircle, PlusCircleIcon, DollarSign, ShoppingCart } from 'lucide-react';
 
 export default function DashboardPage() {
     const { user } = useAuth();
-    const [data, setData] = useState<any>(null);
+    const { data, isLoading } = useDashboardData();
     const [isPrivate, setIsPrivate] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        async function loadData() {
-            try {
-                const dashboardData = await getDashboardDataAction();
-                setData(dashboardData);
-            } catch (error) {
-                console.error("Failed to load dashboard data", error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        loadData();
-    }, []);
 
     const formatCurrency = (value: number) => {
         if (isPrivate) {
@@ -66,22 +54,45 @@ export default function DashboardPage() {
       <DashboardHeader 
         isPrivate={isPrivate} 
         setIsPrivate={setIsPrivate} 
-        saldo={data.saldoMes} 
-        receitas={data.totalReceitasMes} 
-        despesas={data.totalDespesasMes} 
+        balance={data.monthlyBalance} 
+        income={data.totalMonthlyIncome} 
+        expenses={data.totalMonthlyExpenses} 
         formatCurrency={formatCurrency} 
       />
+
+      {/* Quick Add Buttons */}
+      <div className="grid grid-cols-2 gap-4">
+        <TransactionFormModal mode="create" userId={user?.id as string} initialData={{ type: 'income' }}>
+           <Button variant="outline" className="h-16 rounded-2xl bg-emerald-50/50 border-emerald-100 hover:bg-emerald-50 hover:border-emerald-200 text-emerald-700 flex flex-col items-center justify-center gap-1">
+             <div className="flex items-center gap-2 font-bold uppercase tracking-wider text-[10px]">
+                <PlusCircle className="w-4 h-4" />
+                Receita
+             </div>
+             <span className="text-[9px] font-medium opacity-70">Adicionar entrada</span>
+           </Button>
+        </TransactionFormModal>
+
+        <TransactionFormModal mode="create" userId={user?.id as string} initialData={{ type: 'expense' }}>
+           <Button variant="outline" className="h-16 rounded-2xl bg-red-50/50 border-red-100 hover:bg-red-50 hover:border-red-200 text-red-700 flex flex-col items-center justify-center gap-1">
+             <div className="flex items-center gap-2 font-bold uppercase tracking-wider text-[10px]">
+                <PlusCircle className="w-4 h-4" />
+                Despesa
+             </div>
+             <span className="text-[9px] font-medium opacity-70">Adicionar custo</span>
+           </Button>
+        </TransactionFormModal>
+      </div>
 
       <div className="grid grid-cols-2 gap-4">
         <StatCard
           title="Saldo Anual"
-          value={formatCurrency(data.saldoAnual)}
+          value={formatCurrency(data.yearlyBalance)}
           icon={PiggyBank}
-          trend={data.saldoAnual >= 0 ? 'positive' : 'negative'}
+          trend={data.yearlyBalance >= 0 ? 'positive' : 'negative'}
         />
         <StatCard
           title="Total Investido"
-          value={formatCurrency(data.totalInvestido)}
+          value={formatCurrency(data.totalInvested)}
           icon={Landmark}
           trend="positive"
         />
@@ -90,44 +101,46 @@ export default function DashboardPage() {
       <BudgetAlertsWidget alerts={data.budgetAlerts || []} />
       <CommittedSalaryWidget 
         totalCommitted={data.committedAmount || 0} 
-        totalIncome={data.totalReceitasMes || 0}
+        totalIncome={data.totalMonthlyIncome || 0}
         upcomingBills={data.upcomingBills || []}
       />
       <InsightsWidget insights={data.insights || []} />
       <CreditCardWidget summary={data.creditCardSummary} />
       <SavingsGoalsDashboardWidget goals={data.topSavingsGoals || []} />
 
+      <PerformanceChart data={data.performanceData || []} />
+
       <CategoryChart
-        expenses={data.gastosPorCategoria}
-        incomes={data.receitasPorCategoria}
-        totalIncome={data.totalReceitasMes}
-        totalExpense={data.totalDespesasMes}
+        expenses={data.spendingByCategory}
+        incomes={data.incomeByCategory}
+        totalIncome={data.totalMonthlyIncome}
+        totalExpense={data.totalMonthlyExpenses}
       />
 
       <MonthComparison
         previousMonth={{
-            month: data.mesAnteriorData.mes,
-            monthName: data.mesAnteriorData.mesNome,
-            total: data.mesAnteriorData.total
+            month: data.previousMonthData.month,
+            monthName: data.previousMonthData.monthName,
+            total: data.previousMonthData.total
         }}
         currentMonth={{
-            month: data.mesAtualData.mes,
-            monthName: data.mesAtualData.mesNome,
-            total: data.mesAtualData.total
+            month: data.currentMonthData.month,
+            monthName: data.currentMonthData.monthName,
+            total: data.currentMonthData.total
         }}
         nextMonth={{
-            month: data.mesSeguinteData.mes,
-            monthName: data.mesSeguinteData.mesNome,
-            total: data.mesSeguinteData.total
+            month: data.nextMonthData.month,
+            monthName: data.nextMonthData.monthName,
+            total: data.nextMonthData.total
         }}
         isPrivate={isPrivate}
       />
 
       <div className="space-y-4 mt-8">
         <h3 className="text-lg font-semibold tracking-tight px-1">Últimas Transações</h3>
-        {data.ultimasTransacoes.length > 0 ? (
+        {data.recentTransactions.length > 0 ? (
           <div className="flex flex-col gap-3">
-            {data.ultimasTransacoes.map((t: any) => (
+            {data.recentTransactions.map((t: any) => (
               <TransactionListItem 
                 onDelete={()=> {}}
                 key={t.id} 

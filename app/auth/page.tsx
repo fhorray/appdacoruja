@@ -14,8 +14,8 @@ import { useForm } from '@/hooks/use-form';
 
 export default function AuthPage() {
     const router = useRouter();
-    const { login, register } = useAuth();
-    const [mode, setMode] = useState<'login' | 'signup'>('login');
+    const { login, register, forgetPassword } = useAuth();
+    const [mode, setMode] = useState<'login' | 'signup' | 'forgot-password'>('login');
 
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
@@ -55,6 +55,21 @@ export default function AuthPage() {
                         toast.success('Conta criada com sucesso!');
                         setTimeout(() => router.push('/dashboard'), 2000);
                     },
+                });
+            } else if (mode === 'forgot-password') {
+                await forgetPassword({
+                    email: value.email,
+                    redirectTo: '/auth/reset-password',
+                }, {
+                    onError: (ctx) => {
+                        setError(ctx.error.message || 'Erro ao processar solicitação.');
+                        setLoading(false);
+                    },
+                    onSuccess: () => {
+                        setSuccess(true);
+                        setLoading(false);
+                        toast.success('E-mail de recuperação enviado!');
+                    }
                 });
             } else {
                 await login.email({
@@ -96,7 +111,7 @@ export default function AuthPage() {
         }
     };
 
-    if (success && mode === 'signup') {
+    if (success && (mode === 'signup' || mode === 'forgot-password')) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 p-4">
                 <Card className="w-full max-w-md animate-in zoom-in-95 duration-500 text-center py-12 border-primary/20 bg-primary/5">
@@ -104,11 +119,23 @@ export default function AuthPage() {
                         <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle2 className="w-10 h-10 text-primary" />
                         </div>
-                        <h1 className="text-3xl font-bold text-foreground mb-4">Conta criada!</h1>
-                        <p className="text-muted-foreground mb-8">Você será redirecionado para o seu novo painel em instantes...</p>
-                        <Button onClick={() => router.push('/dashboard')} className="w-full h-12 text-lg">
-                            Acessar Dashboard
-                        </Button>
+                        <h1 className="text-3xl font-bold text-foreground mb-4">
+                            {mode === 'signup' ? 'Conta criada!' : 'E-mail enviado!'}
+                        </h1>
+                        <p className="text-muted-foreground mb-8">
+                            {mode === 'signup' 
+                                ? 'Você será redirecionado para o seu novo painel em instantes...' 
+                                : 'Verifique sua caixa de entrada para redefinir sua senha.'}
+                        </p>
+                        {mode === 'signup' ? (
+                            <Button onClick={() => router.push('/dashboard')} className="w-full h-12 text-lg">
+                                Acessar Dashboard
+                            </Button>
+                        ) : (
+                            <Button onClick={() => setMode('login')} className="w-full h-12 text-lg">
+                                Voltar para Login
+                            </Button>
+                        )}
                     </CardContent>
                 </Card>
             </div>
@@ -172,12 +199,14 @@ export default function AuthPage() {
 
                     <div className="mb-10 animate-in slide-in-from-bottom-4 duration-500 fade-in">
                         <h2 className="text-3xl font-bold tracking-tight text-foreground mb-3">
-                            {mode === 'login' ? 'Boas-vindas' : 'Crie sua conta'}
+                            {mode === 'login' ? 'Boas-vindas' : mode === 'signup' ? 'Crie sua conta' : 'Recuperar senha'}
                         </h2>
                         <p className="text-muted-foreground text-[15px]">
                             {mode === 'login' 
                                 ? 'Acesse sua conta para gerenciar suas finanças.' 
-                                : 'Comece agora sua jornada para a liberdade financeira.'}
+                                : mode === 'signup'
+                                    ? 'Comece agora sua jornada para a liberdade financeira.'
+                                    : 'Informe seu e-mail para receber o link de recuperação.'}
                         </p>
                     </div>
 
@@ -231,9 +260,13 @@ export default function AuthPage() {
                                      <div className="flex items-center justify-between ml-1">
                                         <label htmlFor={field.name} className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Senha</label>
                                         {mode === 'login' && (
-                                            <a href="#" className="text-xs font-semibold text-primary hover:opacity-80 transition-opacity">
+                                            <button 
+                                                type="button"
+                                                onClick={() => setMode('forgot-password')} 
+                                                className="text-xs font-semibold text-primary hover:opacity-80 transition-opacity"
+                                            >
                                                 Esqueceu?
-                                            </a>
+                                            </button>
                                         )}
                                     </div>
                                     <field.InputField
@@ -241,7 +274,8 @@ export default function AuthPage() {
                                         icon={Lock}
                                         placeholder="••••••••"
                                         className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
-                                        required
+                                        required={mode !== 'forgot-password'}
+                                        hidden={mode === 'forgot-password'}
                                     />
                                 </div>
                             )}
@@ -272,8 +306,10 @@ export default function AuthPage() {
                                 <Loader2 className="w-5 h-5 animate-spin" />
                             ) : mode === 'login' ? (
                                 <>Entrar <ArrowRight className="w-4 h-4 ml-2" /></>
-                            ) : (
+                            ) : mode === 'signup' ? (
                                 'Criar Minha Conta'
+                            ) : (
+                                'Enviar Link de Recuperação'
                             )}
                         </Button>
                     </form>
@@ -306,7 +342,7 @@ export default function AuthPage() {
                     </div>
 
                     <p className="mt-10 text-center text-[13px] text-muted-foreground">
-                        {mode === 'login' ? 'Não tem uma conta? ' : 'Já tem uma conta? '}
+                        {mode === 'login' ? 'Não tem uma conta? ' : mode === 'signup' ? 'Já tem uma conta? ' : ''}
                         <button
                             type="button"
                             onClick={() => {

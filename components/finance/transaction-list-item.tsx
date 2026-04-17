@@ -15,24 +15,21 @@ interface TransactionListItemProps {
 }
 
 export function TransactionListItem({ transaction, formatCurrency, userId, className, onDelete }: TransactionListItemProps) {
-  const isIncome = transaction.type === "income" || transaction.tipo === "receita"; // Handle both API responses
+  const isIncome = transaction.type === "income";
   const Icon = isIncome ? ArrowUpRight : ArrowDownRight;
   
-  // Format date correctly based on either API response format
+  // Format date correctly
   let formattedDate = "";
   try {
-    const dateObj = transaction.data 
-      ? new Date(transaction.data + "T12:00:00") // Prevent timezone shifting
-      : new Date(transaction.date);
-      
+    const dateObj = new Date(transaction.date);
     formattedDate = format(dateObj, "dd 'de' MMM", { locale: ptBR });
   } catch(e) {
-    formattedDate = transaction.data || transaction.date || "";
+    formattedDate = transaction.date || "";
   }
 
-  const amount = Number(transaction.valor || transaction.amount || 0);
-  const description = transaction.descricao || transaction.description || "";
-  const category = transaction.categoria || transaction.category || "";
+  const amount = Number(transaction.amount || 0);
+  const description = transaction.description || "";
+  const category = transaction.category || "";
 
   return (
     <TransactionFormModal mode="edit" initialData={transaction} userId={userId}>

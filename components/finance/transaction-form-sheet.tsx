@@ -217,6 +217,7 @@ function TransactionFormContent({ initialData, mode, userId, close }: { initialD
           onClick={() => {
             form.setFieldValue('type', 'expense');
             form.setFieldValue('category', '');
+            // When switching to expense, we clear category to avoid showing income categories
           }}
           className={cn(
             "cursor-pointer flex-1 py-2 text-sm font-medium rounded-lg transition-all",
@@ -232,6 +233,7 @@ function TransactionFormContent({ initialData, mode, userId, close }: { initialD
           onClick={() => {
             form.setFieldValue('type', 'income');
             form.setFieldValue('category', '');
+            // When switching to income, we clear category to avoid showing expense categories
           }}
           className={cn(
             "cursor-pointer flex-1 py-2 text-sm font-medium rounded-lg transition-all",
@@ -277,7 +279,7 @@ function TransactionFormContent({ initialData, mode, userId, close }: { initialD
                 onChange={(e: any) => {
                     const val = e.target.value;
                     field.handleChange(val);
-                    const suggested = suggestCategory(val);
+                    const suggested = suggestCategory(val, formType);
                     if (val.length > 2 && suggested) {
                         form.setFieldValue('category', suggested);
                     }

@@ -14,12 +14,12 @@ import { getAuthSession } from "@/lib/auth/server";
 
 /* Types for filters */
 export interface TransactionFilters {
-  mes?: string;
-  ano?: number;
-  categoria?: string;
-  tipo?: string;
+  month?: string;
+  year?: number;
+  category?: string;
+  type?: string;
   status?: string;
-  responsavel?: string;
+  responsible?: string;
 }
 
 /* Helper to get user */
@@ -43,23 +43,23 @@ export async function getTransactionsAction(arg?: string | TransactionFilters) {
 
   let conditions = [eq(transactions.userId, user.id)];
 
-  if (filters?.mes) {
-    conditions.push(eq(transactions.month, filters.mes));
+  if (filters?.month) {
+    conditions.push(eq(transactions.month, filters.month));
   }
-  if (filters?.ano) {
-    conditions.push(eq(transactions.year, filters.ano));
+  if (filters?.year) {
+    conditions.push(eq(transactions.year, filters.year));
   }
-  if (filters?.categoria) {
-    conditions.push(eq(transactions.category, filters.categoria));
+  if (filters?.category) {
+    conditions.push(eq(transactions.category, filters.category));
   }
-  if (filters?.tipo) {
-    conditions.push(eq(transactions.type, filters.tipo));
+  if (filters?.type) {
+    conditions.push(eq(transactions.type, filters.type));
   }
   if (filters?.status) {
     conditions.push(eq(transactions.status, filters.status));
   }
-  if (filters?.responsavel) {
-    conditions.push(eq(transactions.responsible, filters.responsavel));
+  if (filters?.responsible) {
+    conditions.push(eq(transactions.responsible, filters.responsible));
   }
 
   const db = await getDb();
@@ -78,6 +78,7 @@ export async function createTransactionAction(data: InsertTransaction) {
       ...data,
       userId: user.id,
       amount: Number(data.amount),
+      year: Number(data.year),
     }).returning();
 
     revalidatePath('/transactions');
@@ -222,6 +223,29 @@ export async function deleteResponsiblePersonAction(id: string) {
   }
 }
 
+export async function clearUserDataAction() {
+  const user = await getUser();
+  const db = await getDb();
+  
+  try {
+    // Delete in order of dependencies if possible
+    await db.delete(transactions).where(eq(transactions.userId, user.id));
+    await db.delete(categories).where(eq(categories.userId, user.id));
+    await db.delete(responsiblePersons).where(eq(responsiblePersons.userId, user.id));
+    await db.delete(categoryLimits).where(eq(categoryLimits.userId, user.id));
+    await db.delete(savingsGoals).where(eq(savingsGoals.userId, user.id));
+    await db.delete(recurringBills).where(eq(recurringBills.userId, user.id));
+    await db.delete(creditCardInvoices).where(eq(creditCardInvoices.userId, user.id));
+    await db.delete(creditCards).where(eq(creditCards.userId, user.id));
+    
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to clear user data", error);
+    return { success: false, error: "Falha ao limpar dados" };
+  }
+}
+
 // --- Category Limits ---
 
 export async function getCategoryLimitsAction(arg?: string) {
@@ -293,11 +317,11 @@ export async function getDashboardDataAction() {
     .from(recurringBills)
     .where(and(eq(recurringBills.userId, user.id), eq(recurringBills.isActive, true)));
 
-  const despesasMes = allTransactions
+  const monthlyExpenses = allTransactions
     .filter(t => t.month === currentMonthStr && t.type === 'expense')
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
-  const despesasMesAnterior = allTransactions
+  const previousMonthExpenses = allTransactions
     .filter(t => t.month === lastMonthStr && t.type === 'expense')
     .reduce((sum, t) => sum + Number(t.amount), 0);
   
@@ -305,8 +329,8 @@ export async function getDashboardDataAction() {
   const insights = [];
 
   // 1. Comparison with previous month
-  if (despesasMes > 0 && despesasMesAnterior > 0) {
-    const diff = ((despesasMes - despesasMesAnterior) / despesasMesAnterior) * 100;
+  if (monthlyExpenses > 0 && previousMonthExpenses > 0) {
+    const diff = ((monthlyExpenses - previousMonthExpenses) / previousMonthExpenses) * 100;
     if (diff > 10) {
       insights.push({
         type: 'warning',
@@ -331,23 +355,23 @@ export async function getDashboardDataAction() {
     });
   
   const topCategory = Object.entries(categorySpending).sort((a, b) => b[1] - a[1])[0];
-  if (topCategory && topCategory[1] > (0.4 * despesasMes)) {
+  if (topCategory && topCategory[1] > (0.4 * monthlyExpenses)) {
      insights.push({
          type: 'info',
          title: 'Foco em ' + topCategory[0],
-         message: `${topCategory[0]} representa ${( (topCategory[1] / despesasMes) * 100).toFixed(0)}% dos seus gastos este mês.`
+         message: `${topCategory[0]} representa ${( (topCategory[1] / monthlyExpenses) * 100).toFixed(0)}% dos seus gastos este mês.`
      });
   }
 
-  const receitasMes = allTransactions
+  const monthlyIncome = allTransactions
     .filter(t => t.month === currentMonthStr && t.type === 'income')
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   // 3. Committed Salary Insight
   const totalCommitted = userRecurringBills.reduce((sum, b) => sum + Number(b.amount), 0);
  
-  if (receitasMes > 0) {
-      const perc = (totalCommitted / receitasMes) * 100;
+  if (monthlyIncome > 0) {
+      const perc = (totalCommitted / monthlyIncome) * 100;
       if (perc > 50) {
         insights.push({
             type: 'warning',
@@ -357,15 +381,15 @@ export async function getDashboardDataAction() {
       }
   }
 
-  const despesasAno = allTransactions
+  const yearlyExpenses = allTransactions
     .filter(t => t.year === currentYear && t.type === 'expense')
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
-  const receitasAno = allTransactions
+  const yearlyIncome = allTransactions
     .filter(t => t.year === currentYear && t.type === 'income')
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
-  const totalInvestido = allTransactions
+  const totalInvested = allTransactions
     .filter(t => t.category?.toLowerCase().includes('investimento'))
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
@@ -378,22 +402,22 @@ export async function getDashboardDataAction() {
       return acc;
     }, {} as Record<string, number>);
 
-  const totalDespesas = Object.values(categorias).reduce((sum, val) => sum + val, 0);
+  const totalExpenses = Object.values(categorias).reduce((sum, val) => sum + val, 0);
 
-  const gastosPorCategoria = Object.entries(categorias)
+  const spendingByCategory = Object.entries(categorias)
     .filter(([_, total]) => total > 0)
-    .map(([categoria, total]) => ({
-      categoria,
+    .map(([category, total]) => ({
+      category,
       total,
-      percentage: totalDespesas > 0 ? (total / totalDespesas) * 100 : 0
+      percentage: totalExpenses > 0 ? (total / totalExpenses) * 100 : 0
     }))
     .sort((a, b) => b.total - a.total);
 
   const budgetAlerts = userCategoryLimits
     .filter(limit => limit.monthlyLimit && limit.monthlyLimit > 0)
     .map(limit => {
-      const gasto = gastosPorCategoria.find(g => g.categoria === limit.category);
-      const spent = gasto ? gasto.total : 0;
+      const spentInfo = spendingByCategory.find(g => g.category === limit.category);
+      const spent = spentInfo ? spentInfo.total : 0;
       const percentage = (spent / limit.monthlyLimit!) * 100;
       return {
         category: limit.category,
@@ -414,12 +438,12 @@ export async function getDashboardDataAction() {
       return acc;
     }, {} as Record<string, number>);
 
-  const receitasPorCategoria = Object.entries(receitasCateg)
+  const incomeByCategory = Object.entries(receitasCateg)
     .filter(([_, total]) => total > 0)
-    .map(([categoria, total]) => ({
-      categoria,
+    .map(([category, total]) => ({
+      category,
       total,
-      percentage: receitasMes > 0 ? (total / receitasMes) * 100 : 0
+      percentage: monthlyIncome > 0 ? (total / monthlyIncome) * 100 : 0
     }))
     .sort((a, b) => b.total - a.total);
 
@@ -431,20 +455,20 @@ export async function getDashboardDataAction() {
       return acc;
     }, {} as Record<string, number>);
 
-  const gastosPorMes = Object.entries(meses)
-    .map(([mes, total]) => ({ mes, total }))
-    .sort((a, b) => a.mes.localeCompare(b.mes));
+  const expensesByMonth = Object.entries(meses)
+    .map(([month, total]) => ({ month, total }))
+    .sort((a, b) => a.month.localeCompare(b.month));
 
-  const ultimasTransacoes = allTransactions
+  const recentTransactions = allTransactions
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 5)
     .map(t => ({
       id: t.id,
-      data: t.date ? new Date(t.date).toISOString().split('T')[0] : '',
-      descricao: t.description,
-      categoria: t.category,
-      valor: Number(t.amount),
-      tipo: t.type === 'income' ? 'receita' : 'despesa'
+      date: t.date ? new Date(t.date).toISOString().split('T')[0] : '',
+      description: t.description,
+      category: t.category,
+      amount: Number(t.amount),
+      type: t.type === 'income' ? 'income' : 'expense'
     }));
 
   const mesAnterior = getPreviousMonth(currentMonthStr);
@@ -456,9 +480,9 @@ export async function getDashboardDataAction() {
       .reduce((sum, t) => sum + Number(t.amount), 0);
   };
 
-  const saldoMesAnterior = calcMonthTotal(mesAnterior, 'income') - calcMonthTotal(mesAnterior, 'expense');
-  const saldoMesAtual = receitasMes - despesasMes;
-  const saldoMesSeguinte = calcMonthTotal(mesSeguinte, 'income') - calcMonthTotal(mesSeguinte, 'expense');
+  const previousMonthBalance = calcMonthTotal(mesAnterior, 'income') - calcMonthTotal(mesAnterior, 'expense');
+  const currentMonthBalance = monthlyIncome - monthlyExpenses;
+  const nextMonthBalance = calcMonthTotal(mesSeguinte, 'income') - calcMonthTotal(mesSeguinte, 'expense');
 
   // --- Credit Card Summary ---
   const userCreditCards = await db.select()
@@ -500,30 +524,45 @@ export async function getDashboardDataAction() {
     });
   });
 
+  // --- Yearly Performance (Last 6 months) ---
+  const performanceData = [];
+  for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const mLabel = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const mName = d.toLocaleDateString('pt-BR', { month: 'short' });
+      
+      const inc = calcMonthTotal(mLabel, 'income');
+      const exp = calcMonthTotal(mLabel, 'expense');
+      
+      performanceData.push({ month: mName, income: inc, expense: exp });
+  }
+
   return {
-    totalDespesasMes: despesasMes,
-    totalReceitasMes: receitasMes,
-    saldoMes: saldoMesAtual,
-    saldoAnual: receitasAno - despesasAno,
-    totalInvestido,
-    gastosPorCategoria,
-    receitasPorCategoria,
-    gastosPorMes,
-    ultimasTransacoes,
-    mesAnteriorData: {
-      mes: mesAnterior,
-      mesNome: getMonthName(mesAnterior),
-      total: saldoMesAnterior
+    totalMonthlyExpenses: monthlyExpenses,
+    totalMonthlyIncome: monthlyIncome,
+    monthlyBalance: currentMonthBalance,
+    yearlyBalance: yearlyIncome - yearlyExpenses,
+    totalInvested,
+    spendingByCategory,
+    incomeByCategory,
+    expensesByMonth,
+    performanceData,
+    recentTransactions,
+    previousMonthData: {
+      month: mesAnterior,
+      monthName: getMonthName(mesAnterior),
+      total: previousMonthBalance
     },
-    mesAtualData: {
-      mes: currentMonthStr,
-      mesNome: getMonthName(currentMonthStr),
-      total: saldoMesAtual
+    currentMonthData: {
+      month: currentMonthStr,
+      monthName: getMonthName(currentMonthStr),
+      total: currentMonthBalance
     },
-    mesSeguinteData: {
-      mes: mesSeguinte,
-      mesNome: getMonthName(mesSeguinte),
-      total: saldoMesSeguinte
+    nextMonthData: {
+      month: mesSeguinte,
+      monthName: getMonthName(mesSeguinte),
+      total: nextMonthBalance
     },
     topSavingsGoals: userSavingsGoals,
     budgetAlerts,
@@ -535,7 +574,8 @@ export async function getDashboardDataAction() {
             const bDiff = b.dueDay >= today ? b.dueDay - today : b.dueDay + 31 - today;
             return aDiff - bDiff;
         })
-        .slice(0, 3),
+        .slice(0, 3)
+        .map(b => ({ ...b, type: b.type })), // Ensure type is passed
     insights,
     creditCardSummary
   };

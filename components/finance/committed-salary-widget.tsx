@@ -14,6 +14,7 @@ interface CommittedSalaryWidgetProps {
         name: string;
         amount: number;
         dueDay: number;
+        type?: string | null;
         color?: string | null;
     }[];
 }
@@ -79,7 +80,9 @@ export function CommittedSalaryWidget({ totalCommitted, totalIncome, upcomingBil
                                         <div className="flex items-center gap-2 overflow-hidden">
                                             <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: bill.color || "#3b82f6" }} />
                                             <span className="truncate">{bill.name}</span>
-                                            <span className="text-[10px] bg-muted px-1 rounded font-medium shrink-0">Dia {bill.dueDay}</span>
+                                            <span className="text-[10px] bg-muted px-1 rounded font-medium shrink-0">
+                                                {bill.type === 'subscription' ? 'Assinatura' : `Dia ${bill.dueDay}`}
+                                            </span>
                                         </div>
                                         <span className="font-semibold shrink-0">{formatCurrency(bill.amount)}</span>
                                     </div>
@@ -90,7 +93,7 @@ export function CommittedSalaryWidget({ totalCommitted, totalIncome, upcomingBil
                     
                     <Button variant="ghost" size="sm" asChild className="w-full mt-2 sm:hidden text-muted-foreground">
                         <Link href="/bills">
-                            Gerenciar contas fixas
+                            Gerenciar assinaturas e contas
                         </Link>
                     </Button>
                 </div>

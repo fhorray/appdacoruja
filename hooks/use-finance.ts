@@ -30,6 +30,7 @@ export const useFinance = (userId?: string) => {
     mutationFn: createTransactionAction,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions', userId] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
     }
   });
 
@@ -37,6 +38,7 @@ export const useFinance = (userId?: string) => {
     mutationFn: updateTransactionAction,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions', userId] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
     }
   });
 
@@ -44,6 +46,7 @@ export const useFinance = (userId?: string) => {
     mutationFn: deleteTransactionAction,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions', userId] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
     }
   });
 
@@ -114,6 +117,7 @@ export const useFinance = (userId?: string) => {
     mutationFn: upsertCategoryLimitAction,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['category-limits', userId] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
     }
   });
 

@@ -24,7 +24,7 @@ export const categories = sqliteTable("categories", (t) => ({
   userId: t.text("user_id").references(() => users.id, { onDelete: "cascade" }),
   createdAt: t.integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
 }), (table) => ({
-    nameTypeUnique: uniqueIndex("categories_name_type_unique").on(table.name, table.type),
+  nameTypeUnique: uniqueIndex("categories_name_type_userId_unique").on(table.name, table.type, table.userId),
 }));
 
 /**
@@ -36,9 +36,9 @@ export const responsiblePersons = sqliteTable("responsible_persons", (t) => ({
   isActive: t.integer("is_active", { mode: "boolean" }).default(true),
   userId: t.text("user_id").references(() => users.id, { onDelete: "cascade" }),
   createdAt: t.integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
-}), (table) => ({
-    nameUnique: uniqueIndex("responsible_persons_name_unique").on(table.name),
-}));
+}), (table) => [
+  uniqueIndex("responsible_persons_name_userId_unique").on(table.name, table.userId),
+]);
 
 /**
  * Transactions table
@@ -76,7 +76,7 @@ export const categoryLimits = sqliteTable("category_limits", (t) => ({
   userId: t.text("user_id").references(() => users.id, { onDelete: "cascade" }),
   createdAt: t.integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
 }), (table) => ({
-    categoryYearUnique: uniqueIndex("category_limits_year_unique").on(table.category, table.referenceYear),
+  categoryYearUnique: uniqueIndex("category_limits_year_unique").on(table.category, table.referenceYear),
 }));
 
 /**

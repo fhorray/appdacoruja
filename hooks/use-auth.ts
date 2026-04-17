@@ -20,6 +20,8 @@ export const useAuth = () => {
     logout,
     register: authClient.signUp,
     login: authClient.signIn,
+    forgetPassword: authClient.requestPasswordReset,
+    resetPassword: authClient.resetPassword,
     isPending: isPending,
   };
 };

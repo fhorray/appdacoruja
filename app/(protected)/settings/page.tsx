@@ -13,6 +13,9 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PageHeader } from '@/components/page-header';
 import { LoadingScreen } from '@/components/loading-screen';
+import { clearUserDataAction } from '@/server/actions/finance-actions';
+import { toast } from 'sonner';
+import { Trash2 } from 'lucide-react';
 
 export default function SettingsPage() {
     const router = useRouter();
@@ -70,6 +73,30 @@ export default function SettingsPage() {
     const getInitials = (userName: string | null | undefined) => {
         if (!userName) return 'U';
         return userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    };
+
+    const [isClearing, setIsClearing] = useState(false);
+
+    const handleClearData = async () => {
+        if (!confirm('ATENÇÃO: Isso apagará TODOS os seus dados financeiros (transações, cartões, metas, etc) permanentemente. Sua conta de usuário será mantida. Deseja continuar?')) {
+            return;
+        }
+
+        setIsClearing(true);
+        try {
+            const result = await clearUserDataAction();
+            if (result.success) {
+                toast.success('Todos os dados foram limpos com sucesso!');
+                router.push('/dashboard');
+            } else {
+                toast.error('Erro ao limpar dados.');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Erro ao processar solicitação.');
+        } finally {
+            setIsClearing(false);
+        }
     };
 
     if (!currentUser) {
@@ -197,20 +224,36 @@ export default function SettingsPage() {
                 {/* Danger Zone */}
                 <Card className="border-red-200 bg-red-50/50 dark:border-red-900/50 dark:bg-red-950/20">
                     <CardHeader>
-                        <CardTitle className="text-red-600 dark:text-red-400">Sessão</CardTitle>
+                        <CardTitle className="text-red-600 dark:text-red-400">Zona de Perigo</CardTitle>
                         <CardDescription className="text-red-600/80 dark:text-red-400/80">
-                            Encerre sua sessão de forma segura
+                            Ações irreversíveis para sua conta
                         </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <Button 
-                            variant="destructive"
-                            onClick={handleLogout}
-                            className="w-full sm:w-auto"
-                        >
-                            <LogOut className="w-4 h-4 mr-2" />
-                            Sair da conta
-                        </Button>
+                    <CardContent className="space-y-4">
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <Button 
+                                variant="destructive"
+                                onClick={handleLogout}
+                                className="flex-1 sm:flex-none"
+                            >
+                                <LogOut className="w-4 h-4 mr-2" />
+                                Sair da conta
+                            </Button>
+
+                            <Button 
+                                variant="outline"
+                                onClick={handleClearData}
+                                disabled={isClearing}
+                                className="flex-1 sm:flex-none border-red-200 text-red-600 hover:bg-red-100 hover:text-red-700"
+                            >
+                                {isClearing ? 'Limpando...' : (
+                                    <>
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        Limpar todos os dados
+                                    </>
+                                )}
+                            </Button>
+                        </div>
                     </CardContent>
                 </Card>
             </div>

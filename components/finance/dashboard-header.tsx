@@ -9,18 +9,18 @@ import { useAuth } from "@/hooks/use-auth";
 interface DashboardHeaderProps {
   isPrivate: boolean;
   setIsPrivate: (val: boolean) => void;
-  saldo: number;
-  receitas: number;
-  despesas: number;
+  balance: number;
+  income: number;
+  expenses: number;
   formatCurrency: (val: number) => string;
 }
 
 export function DashboardHeader({
   isPrivate,
   setIsPrivate,
-  saldo,
-  receitas,
-  despesas,
+  balance,
+  income,
+  expenses,
   formatCurrency,
 }: DashboardHeaderProps) {
   const { user } = useAuth();
@@ -45,7 +45,7 @@ export function DashboardHeader({
               </button>
             </div>
             <h1 className="text-4xl font-bold tracking-tight">
-              {formatCurrency(saldo)}
+              {formatCurrency(balance)}
             </h1>
           </div>
 
@@ -63,7 +63,7 @@ export function DashboardHeader({
             </div>
             <div className="flex flex-col">
               <span className="text-xs text-zinc-400 font-medium">Receitas</span>
-              <span className="text-sm font-semibold text-zinc-100">{formatCurrency(receitas)}</span>
+              <span className="text-sm font-semibold text-zinc-100">{formatCurrency(income)}</span>
             </div>
           </div>
           <div className="flex items-center gap-3 bg-zinc-900/50 rounded-2xl p-3 border border-white/5">
@@ -72,7 +72,7 @@ export function DashboardHeader({
             </div>
             <div className="flex flex-col">
               <span className="text-xs text-zinc-400 font-medium">Despesas</span>
-              <span className="text-sm font-semibold text-zinc-100">{formatCurrency(despesas)}</span>
+              <span className="text-sm font-semibold text-zinc-100">{formatCurrency(expenses)}</span>
             </div>
           </div>
         </div>
