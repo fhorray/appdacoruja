@@ -47,11 +47,10 @@ export function MonthComparison({ previousMonth: prevMonth, currentMonth: currMo
 
   const renderCard = (monthData: MonthData, variation?: { percentage: number; type: 'increase' | 'decrease' | 'stable' }, isHighlight?: boolean) => {
     return (
-      <div className={`relative overflow-hidden rounded-xl border-2 transition-all ${
-        isHighlight
+      <div className={`relative overflow-hidden rounded-xl border-2 transition-all ${isHighlight
           ? 'bg-blue-50 border-blue-500 shadow-md md:scale-105'
           : 'bg-white border-gray-200 shadow-sm'
-      }`}>
+        }`}>
         <div className="p-5">
           <div className="flex justify-between items-start mb-3">
             <div>
@@ -63,11 +62,10 @@ export function MonthComparison({ previousMonth: prevMonth, currentMonth: currMo
               </p>
             </div>
             {variation && variation.type !== 'stable' && (
-              <div className={`flex items-center gap-1 px-2.5 py-1 rounded-lg ${
-                variation.type === 'increase'
+              <div className={`flex items-center gap-1 px-2.5 py-1 rounded-md ${variation.type === 'increase'
                   ? 'bg-green-100 text-green-700'
                   : 'bg-red-100 text-red-700'
-              }`}>
+                }`}>
                 {variation.type === 'increase' ? (
                   <TrendingUp className="w-4 h-4" />
                 ) : (
@@ -79,7 +77,7 @@ export function MonthComparison({ previousMonth: prevMonth, currentMonth: currMo
               </div>
             )}
             {variation && variation.type === 'stable' && (
-              <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600">
+              <div className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-gray-100 text-gray-600">
                 <Minus className="w-4 h-4" />
                 <span className="text-sm font-semibold">0%</span>
               </div>
@@ -88,21 +86,19 @@ export function MonthComparison({ previousMonth: prevMonth, currentMonth: currMo
 
           <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all ${
-                monthData.total >= 0
+              className={`h-full rounded-full transition-all ${monthData.total >= 0
                   ? (isHighlight ? 'bg-blue-600' : 'bg-green-500')
                   : 'bg-red-500'
-              }`}
+                }`}
               style={{ width: maxValue > 0 ? `${(Math.abs(monthData.total) / maxValue) * 100}%` : '0%' }}
             />
           </div>
 
           {variation && variation.type !== 'stable' && !isPrivate && (
-            <p className={`text-xs mt-2 ${
-              variation.type === 'increase'
+            <p className={`text-xs mt-2 ${variation.type === 'increase'
                 ? 'text-green-600'
                 : 'text-red-600'
-            }`}>
+              }`}>
               {variation.type === 'increase' ? 'Melhoria' : 'Piora'} de {formatCurrency(Math.abs(monthData.total - (isHighlight ? prevMonth.total : currMonth.total)))} em relação ao mês {isHighlight ? 'anterior' : 'atual'}
             </p>
           )}
@@ -134,17 +130,16 @@ export function MonthComparison({ previousMonth: prevMonth, currentMonth: currMo
       </div>
 
       {!isPrivate && (
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="mt-6 p-4 bg-gray-50 rounded-md border border-gray-200">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-gray-600 mb-1">Variação do saldo</p>
-              <p className={`font-semibold ${
-                variationCurrPrev.type === 'increase'
+              <p className={`font-semibold ${variationCurrPrev.type === 'increase'
                   ? 'text-green-600'
                   : variationCurrPrev.type === 'decrease'
-                  ? 'text-red-600'
-                  : 'text-gray-600'
-              }`}>
+                    ? 'text-red-600'
+                    : 'text-gray-600'
+                }`}>
                 {variationCurrPrev.type === 'increase' && '+'}
                 {variationCurrPrev.type === 'decrease' && '-'}
                 {variationCurrPrev.percentage.toFixed(1)}% vs mês anterior
@@ -152,13 +147,12 @@ export function MonthComparison({ previousMonth: prevMonth, currentMonth: currMo
             </div>
             <div>
               <p className="text-gray-600 mb-1">Projeção próximo mês</p>
-              <p className={`font-semibold ${
-                variationNextCurr.type === 'increase'
+              <p className={`font-semibold ${variationNextCurr.type === 'increase'
                   ? 'text-green-600'
                   : variationNextCurr.type === 'decrease'
-                  ? 'text-red-600'
-                  : 'text-gray-600'
-              }`}>
+                    ? 'text-red-600'
+                    : 'text-gray-600'
+                }`}>
                 {nxtMonth.total > 0
                   ? `${variationNextCurr.type === 'increase' ? '+' : variationNextCurr.type === 'decrease' ? '-' : ''}${variationNextCurr.percentage.toFixed(1)}% vs mês atual`
                   : 'Sem dados'

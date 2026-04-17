@@ -43,16 +43,14 @@ export function SubscriptionStatus() {
   const isActive = subscription?.subscription_status === 'active';
 
   return (
-    <div className={`rounded-xl p-5 mb-6 border-2 ${
-      isActive
+    <div className={`rounded-md p-5 mb-6 border-2 ${isActive
         ? 'bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200'
         : 'bg-gradient-to-r from-orange-50 to-red-50 border-orange-200'
-    }`}>
+      }`}>
       <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
         <div className="flex items-center gap-4">
-          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-            isActive ? 'bg-yellow-100' : 'bg-orange-100'
-          }`}>
+          <div className={`w-12 h-12 rounded-md flex items-center justify-center ${isActive ? 'bg-yellow-100' : 'bg-orange-100'
+            }`}>
             {isActive ? (
               <Crown className="w-6 h-6 text-yellow-600" />
             ) : (

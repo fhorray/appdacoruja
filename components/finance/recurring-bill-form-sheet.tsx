@@ -114,7 +114,7 @@ export function RecurringBillFormSheet({ isOpen, onClose, userId, initialData }:
       onOpenChange={(open) => !open && onClose()}
       title={isEditing ? "Editar Conta Recorrente" : "Nova Conta Recorrente"}
       description={isEditing ? "Altere os detalhes da sua assinatura ou conta fixa." : "Gerencie suas despesas recorrentes para ter uma previsão real do seu saldo."}
-      
+
       className="px-4 !max-w-xl"
       content={
         <div className="space-y-6">
@@ -142,40 +142,40 @@ export function RecurringBillFormSheet({ isOpen, onClose, userId, initialData }:
                 name="amount"
                 validators={{
                   onChange: ({ value }) => {
-                     const num = Number(value);
-                     if (isNaN(num) || num <= 0) return "O valor deve ser maior que zero";
-                     return undefined;
+                    const num = Number(value);
+                    if (isNaN(num) || num <= 0) return "O valor deve ser maior que zero";
+                    return undefined;
                   }
                 }}
                 children={(field) => (
-                  <field.MoneyField 
-                    label="Valor Estimado" 
-                    placeholder="R$ 0,00" 
-                    className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                  <field.MoneyField
+                    label="Valor Estimado"
+                    placeholder="R$ 0,00"
+                    className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-md"
                   />
                 )}
               />
 
               <div className="grid grid-cols-2 gap-4">
                 <form.AppField
-                    name="category"
-                    validators={{
-                        onChange: ({ value }) => !value ? "Categoria é obrigatória" : undefined,
-                    }}
-                    children={(field) => (
+                  name="category"
+                  validators={{
+                    onChange: ({ value }) => !value ? "Categoria é obrigatória" : undefined,
+                  }}
+                  children={(field) => (
                     <field.SelectField
-                        label="Categoria"
-                        options={[
-                          ...categories.map(c => ({ value: c.name, label: c.name })),
-                          { value: "__new__", label: "+ Nova Categoria" }
-                        ]}
-                        onValueChange={(v) => {
-                          if (v === '__new__') setShowNewCategory(true);
-                          else field.handleChange(v);
-                        }}
-                        className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                      label="Categoria"
+                      options={[
+                        ...categories.map(c => ({ value: c.name, label: c.name })),
+                        { value: "__new__", label: "+ Nova Categoria" }
+                      ]}
+                      onValueChange={(v) => {
+                        if (v === '__new__') setShowNewCategory(true);
+                        else field.handleChange(v);
+                      }}
+                      className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-md"
                     />
-                    )}
+                  )}
                 />
                 {showNewCategory && (
                   <div className="col-span-2 mt-2 flex gap-2 animate-in slide-in-from-top-2">
@@ -184,31 +184,31 @@ export function RecurringBillFormSheet({ isOpen, onClose, userId, initialData }:
                       value={newCategoryName}
                       onChange={(e) => setNewCategoryName(e.target.value)}
                       placeholder="Nome da categoria"
-                      className="flex-1 h-10 border-none bg-muted/50 rounded-xl"
+                      className="flex-1 h-10 border-none bg-muted/50 rounded-md"
                     />
-                    <Button type="button" onClick={handleAddCategory} className="bg-emerald-600 hover:bg-emerald-700 text-white h-10 rounded-xl">OK</Button>
-                    <Button type="button" variant="ghost" onClick={() => setShowNewCategory(false)} className="h-10 px-3 rounded-xl">✕</Button>
+                    <Button type="button" onClick={handleAddCategory} className="bg-emerald-600 hover:bg-emerald-700 text-white h-10 rounded-md">OK</Button>
+                    <Button type="button" variant="ghost" onClick={() => setShowNewCategory(false)} className="h-10 px-3 rounded-md">✕</Button>
                   </div>
                 )}
 
                 <form.AppField
-                    name="dueDay"
-                    validators={{
-                        onChange: ({ value }) => {
-                            const num = Number(value);
-                            if (isNaN(num) || num < 1 || num > 31) return "Dia inválido (1-31)";
-                            return undefined;
-                        }
-                    }}
-                    children={(field) => (
-                    <field.InputField 
-                      type="number" 
-                      label="Dia de Vencimento" 
-                      icon={Hash as any} 
-                      placeholder="Ex: 5" 
-                      className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                  name="dueDay"
+                  validators={{
+                    onChange: ({ value }) => {
+                      const num = Number(value);
+                      if (isNaN(num) || num < 1 || num > 31) return "Dia inválido (1-31)";
+                      return undefined;
+                    }
+                  }}
+                  children={(field) => (
+                    <field.InputField
+                      type="number"
+                      label="Dia de Vencimento"
+                      icon={Hash as any}
+                      placeholder="Ex: 5"
+                      className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-md"
                     />
-                    )}
+                  )}
                 />
               </div>
 
@@ -217,35 +217,35 @@ export function RecurringBillFormSheet({ isOpen, onClose, userId, initialData }:
                 children={(field) => (
                   <field.SelectField
                     label="Tipo de Conta"
-                    className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                    className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-md"
                     options={[
-                        { value: "fixed_bill", label: "Conta Fixa (Essencial)" },
-                        { value: "subscription", label: "Assinatura (Lazer/Extra)" }
+                      { value: "fixed_bill", label: "Conta Fixa (Essencial)" },
+                      { value: "subscription", label: "Assinatura (Lazer/Extra)" }
                     ]}
                   />
                 )}
               />
 
               <div className="space-y-3">
-                 <label className="text-sm font-medium leading-none flex items-center gap-2">
-                    <Palette className="w-4 h-4 text-muted-foreground" /> Cor de destaque
-                 </label>
-                 <form.AppField
-                    name="color"
-                    children={(field) => (
-                        <div className="flex flex-wrap gap-3">
-                            {PREDEFINED_COLORS.map(color => (
-                                <button
-                                    key={color}
-                                    type="button"
-                                    className={`w-8 h-8 rounded-full transition-all flex items-center justify-center ${field.state.value === color ? 'ring-2 ring-primary ring-offset-2 scale-110' : 'hover:scale-110'}`}
-                                    style={{ backgroundColor: color }}
-                                    onClick={() => field.handleChange(color)}
-                                />
-                            ))}
-                        </div>
-                    )}
-                 />
+                <label className="text-sm font-medium leading-none flex items-center gap-2">
+                  <Palette className="w-4 h-4 text-muted-foreground" /> Cor de destaque
+                </label>
+                <form.AppField
+                  name="color"
+                  children={(field) => (
+                    <div className="flex flex-wrap gap-3">
+                      {PREDEFINED_COLORS.map(color => (
+                        <button
+                          key={color}
+                          type="button"
+                          className={`w-8 h-8 rounded-full transition-all flex items-center justify-center ${field.state.value === color ? 'ring-2 ring-primary ring-offset-2 scale-110' : 'hover:scale-110'}`}
+                          style={{ backgroundColor: color }}
+                          onClick={() => field.handleChange(color)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                />
               </div>
 
               <form.AppField
@@ -264,9 +264,9 @@ export function RecurringBillFormSheet({ isOpen, onClose, userId, initialData }:
           <Button variant="outline" onClick={onClose} className="">
             Cancelar
           </Button>
-          <Button 
-            type="submit" 
-            form="recurring-bill-form" 
+          <Button
+            type="submit"
+            form="recurring-bill-form"
             className=""
             disabled={isEditing ? updateRecurringBill.isPending : createRecurringBill.isPending}
           >

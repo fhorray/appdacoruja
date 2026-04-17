@@ -94,11 +94,11 @@ export function FinancialProjectFormSheet({ isOpen, onClose, userId, initialData
                   onChange: ({ value }) => !value ? "Nome é obrigatório" : undefined,
                 }}
                 children={(field) => (
-                  <field.InputField 
-                    label="Nome do Projeto" 
-                    icon={Target as any} 
-                    placeholder="Ex: Reserva de Emergência, Viagem..." 
-                    className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                  <field.InputField
+                    label="Nome do Projeto"
+                    icon={Target as any}
+                    placeholder="Ex: Reserva de Emergência, Viagem..."
+                    className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-md"
                   />
                 )}
               />
@@ -108,16 +108,16 @@ export function FinancialProjectFormSheet({ isOpen, onClose, userId, initialData
                   name="targetValue"
                   validators={{
                     onChange: ({ value }) => {
-                       const num = Number(value);
-                       if (isNaN(num) || num <= 0) return "A meta deve ser maior que zero";
-                       return undefined;
+                      const num = Number(value);
+                      if (isNaN(num) || num <= 0) return "A meta deve ser maior que zero";
+                      return undefined;
                     }
                   }}
                   children={(field) => (
-                    <field.MoneyField 
-                      label="Valor da Meta" 
-                      placeholder="R$ 10.000,00" 
-                      className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                    <field.MoneyField
+                      label="Valor da Meta"
+                      placeholder="R$ 10.000,00"
+                      className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-md"
                     />
                   )}
                 />
@@ -125,10 +125,10 @@ export function FinancialProjectFormSheet({ isOpen, onClose, userId, initialData
                 <form.AppField
                   name="accumulatedValue"
                   children={(field) => (
-                    <field.MoneyField 
-                      label="Já acumulado" 
-                      placeholder="R$ 0,00" 
-                      className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                    <field.MoneyField
+                      label="Já acumulado"
+                      placeholder="R$ 0,00"
+                      className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-md"
                     />
                   )}
                 />
@@ -141,11 +141,11 @@ export function FinancialProjectFormSheet({ isOpen, onClose, userId, initialData
                     onChange: ({ value }) => !value ? "Data alvo é obrigatória" : undefined,
                   }}
                   children={(field) => (
-                    <field.InputField 
-                      type="date" 
-                      label="Data Alvo" 
-                      icon={CalendarDays as any} 
-                      className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                    <field.InputField
+                      type="date"
+                      label="Data Alvo"
+                      icon={CalendarDays as any}
+                      className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-md"
                     />
                   )}
                 />
@@ -153,12 +153,12 @@ export function FinancialProjectFormSheet({ isOpen, onClose, userId, initialData
                 <form.AppField
                   name="estimatedYield"
                   children={(field) => (
-                    <field.InputField 
-                      type="number" 
-                      label="Rendimento Esperado (% a.a)" 
-                      icon={TrendingUp as any} 
+                    <field.InputField
+                      type="number"
+                      label="Rendimento Esperado (% a.a)"
+                      icon={TrendingUp as any}
                       step="0.1"
-                      className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-xl"
+                      className="h-12 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 rounded-md"
                     />
                   )}
                 />
@@ -172,10 +172,10 @@ export function FinancialProjectFormSheet({ isOpen, onClose, userId, initialData
           <Button variant="outline" onClick={onClose}>
             Cancelar
           </Button>
-          <Button 
-            type="submit" 
-            form="financial-project-form" 
-            className="w-full h-11 rounded-xl"
+          <Button
+            type="submit"
+            form="financial-project-form"
+            className="w-full h-11 rounded-md"
             disabled={isEditing ? updateFinancialProject.isPending : createFinancialProject.isPending}
           >
             {isEditing ? (updateFinancialProject.isPending ? "Salvando..." : "Salvar") : (createFinancialProject.isPending ? "Criando..." : "Criar")}

@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { getDashboardDataAction } from "@/server/actions/finance-actions";
+import { getDashboardDataAction, DashboardData } from "@/server/actions/finance-actions";
 
 export function useDashboardData() {
-    return useQuery({
+    return useQuery<DashboardData>({
         queryKey: ['dashboard-data'],
         queryFn: async () => {
             const data = await getDashboardDataAction();

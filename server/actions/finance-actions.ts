@@ -9,8 +9,57 @@ import { initAuth } from "@/lib/auth/server";
 import { headers } from "next/headers";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { SelectUser, InsertTransaction, InsertCategory, InsertResponsiblePerson } from "../database/schemas";
+import { SelectUser, InsertTransaction, InsertCategory, InsertResponsiblePerson, SelectSavingsGoal } from "../database/schemas";
 import { getAuthSession } from "@/lib/auth/server";
+
+export interface DashboardData {
+    totalMonthlyExpenses: number;
+    totalMonthlyIncome: number;
+    monthlyBalance: number;
+    yearlyBalance: number;
+    totalInvested: number;
+    spendingByCategory: { category: string; total: number; percentage: number }[];
+    incomeByCategory: { category: string; total: number; percentage: number }[];
+    expensesByMonth: { month: string; total: number }[];
+    performanceData: { month: string; income: number; expense: number }[];
+    recentTransactions: {
+        id: string;
+        date: string;
+        description: string;
+        category: string;
+        amount: number;
+        type: 'income' | 'expense';
+        cardName?: string | null;
+    }[];
+    previousMonthData: { month: string; monthName: string; total: number };
+    currentMonthData: { month: string; monthName: string; total: number };
+    nextMonthData: { month: string; monthName: string; total: number };
+    topSavingsGoals: SelectSavingsGoal[];
+    budgetAlerts: { category: string; limit: number; spent: number; percentage: number }[];
+    committedAmount: number;
+    upcomingBills: {
+        name: string;
+        amount: number;
+        dueDay: number;
+        type: string | null;
+        color?: string | null;
+    }[];
+    insights: { type: 'positive' | 'warning' | 'info'; title: string; message: string }[];
+    creditCardSummary: {
+        totalLimit: number;
+        totalUsed: number;
+        cards: {
+            id: string;
+            name: string;
+            brand: string | null;
+            color: string | null;
+            limit: number;
+            used: number;
+            dueDay: number;
+            closingDay: number;
+        }[];
+    };
+}
 
 /* Types for filters */
 export interface TransactionFilters {
@@ -20,6 +69,7 @@ export interface TransactionFilters {
   type?: string;
   status?: string;
   responsible?: string;
+  creditCardId?: string;
 }
 
 /* Helper to get user */
@@ -38,9 +88,7 @@ export async function getTransactionsAction(arg?: string | TransactionFilters) {
   if (typeof arg === 'object') {
     filters = arg;
   }
-  // If arg is string (userId), we ignore it and use session user, or we could filter by it if we were admin.
-  // For now, securely use session user.
-
+ 
   let conditions = [eq(transactions.userId, user.id)];
 
   if (filters?.month) {
@@ -61,12 +109,24 @@ export async function getTransactionsAction(arg?: string | TransactionFilters) {
   if (filters?.responsible) {
     conditions.push(eq(transactions.responsible, filters.responsible));
   }
+  if (filters?.creditCardId) {
+    conditions.push(eq(transactions.creditCardId, filters.creditCardId));
+  }
 
   const db = await getDb();
-  return db.select()
+  const results = await db.select({
+    transaction: transactions,
+    cardName: creditCards.name,
+  })
     .from(transactions)
+    .leftJoin(creditCards, eq(transactions.creditCardId, creditCards.id))
     .where(and(...conditions))
     .orderBy(desc(transactions.date));
+
+  return results.map(r => ({
+    ...r.transaction,
+    cardName: r.cardName
+  }));
 }
 
 export async function createTransactionAction(data: InsertTransaction) {
@@ -90,10 +150,7 @@ export async function createTransactionAction(data: InsertTransaction) {
   }
 }
 
-export async function updateTransactionAction(data: Partial<InsertTransaction> & { id: string }) { // Data might be {id, ...} or just fields. use-finance passes {id, ...} or similar? 
-  // use-finance.ts uses mutationFn: updateTransactionAction.
-  // Check use-finance signature. It's `updateTransaction.mutateAsync({ id, ... })` probably.
-  // Assuming data has id.
+export async function updateTransactionAction(data: Partial<InsertTransaction> & { id: string }) { 
   const user = await getUser();
   const db = await getDb();
   const { id, ...updateData } = data;
@@ -137,7 +194,7 @@ export async function deleteTransactionAction(id: string) {
 
 // --- Categories ---
 
-export async function getCategoriesAction(arg?: string) { // arg was userId
+export async function getCategoriesAction(arg?: string) {
   const user = await getUser();
   const db = await getDb();
   return db.select().from(categories).where(eq(categories.userId, user.id)).orderBy(categories.name);
@@ -147,8 +204,6 @@ export async function createCategoryAction(data: InsertCategory | string) {
   const user = await getUser();
   const db = await getDb();
   try {
-    // data might be string (name) or object {name, type...}
-    // use-finance passes {name, type, userId...}
     const values = typeof data === 'string' ? { name: data, userId: user.id } : { ...data, userId: user.id };
 
     await db.insert(categories).values(values);
@@ -228,7 +283,6 @@ export async function clearUserDataAction() {
   const db = await getDb();
   
   try {
-    // Delete in order of dependencies if possible
     await db.delete(transactions).where(eq(transactions.userId, user.id));
     await db.delete(categories).where(eq(categories.userId, user.id));
     await db.delete(responsiblePersons).where(eq(responsiblePersons.userId, user.id));
@@ -271,7 +325,7 @@ export async function upsertCategoryLimitAction(data: any) {
 
 // --- Dashboard Data ---
 
-export async function getDashboardDataAction() {
+export async function getDashboardDataAction(): Promise<DashboardData> {
   const user = await getUser();
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
@@ -324,7 +378,7 @@ export async function getDashboardDataAction() {
   const previousMonthExpenses = allTransactions
     .filter(t => t.month === lastMonthStr && t.type === 'expense')
     .reduce((sum, t) => sum + Number(t.amount), 0);
-  
+
   // --- Enhanced Insights ---
   const insights = [];
 
@@ -333,13 +387,13 @@ export async function getDashboardDataAction() {
     const diff = ((monthlyExpenses - previousMonthExpenses) / previousMonthExpenses) * 100;
     if (diff > 10) {
       insights.push({
-        type: 'warning',
+        type: 'warning' as const,
         title: 'Gasto em aumento',
         message: `Você gastou ${diff.toFixed(0)}% a mais que no mês passado até agora.`,
       });
     } else if (diff < -10) {
       insights.push({
-        type: 'positive',
+        type: 'positive' as const,
         title: 'Economia detectada',
         message: `Parabéns! Seus gastos estão ${Math.abs(diff).toFixed(0)}% menores que no mês passado.`,
       });
@@ -353,11 +407,12 @@ export async function getDashboardDataAction() {
     .forEach(t => {
       categorySpending[t.category] = (categorySpending[t.category] || 0) + Number(t.amount);
     });
-  
+
   const topCategory = Object.entries(categorySpending).sort((a, b) => b[1] - a[1])[0];
+
   if (topCategory && topCategory[1] > (0.4 * monthlyExpenses)) {
      insights.push({
-         type: 'info',
+         type: 'info' as const,
          title: 'Foco em ' + topCategory[0],
          message: `${topCategory[0]} representa ${( (topCategory[1] / monthlyExpenses) * 100).toFixed(0)}% dos seus gastos este mês.`
      });
@@ -374,7 +429,7 @@ export async function getDashboardDataAction() {
       const perc = (totalCommitted / monthlyIncome) * 100;
       if (perc > 50) {
         insights.push({
-            type: 'warning',
+            type: 'warning' as const,
             title: 'Comprometimento Alto',
             message: `Suas contas fixas ocupam ${perc.toFixed(0)}% da sua renda. Tente reduzir assinaturas.`
         });
@@ -393,7 +448,7 @@ export async function getDashboardDataAction() {
     .filter(t => t.category?.toLowerCase().includes('investimento'))
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
-  const categorias = allTransactions
+  const categoriesMap = allTransactions
     .filter(t => t.month === currentMonthStr && t.type === 'expense')
     .reduce((acc, t) => {
       const cat = t.category;
@@ -402,9 +457,9 @@ export async function getDashboardDataAction() {
       return acc;
     }, {} as Record<string, number>);
 
-  const totalExpenses = Object.values(categorias).reduce((sum, val) => sum + val, 0);
+  const totalExpenses = Object.values(categoriesMap).reduce((sum, val) => sum + val, 0);
 
-  const spendingByCategory = Object.entries(categorias)
+  const spendingByCategory = Object.entries(categoriesMap)
     .filter(([_, total]) => total > 0)
     .map(([category, total]) => ({
       category,
@@ -429,7 +484,7 @@ export async function getDashboardDataAction() {
     .filter(alert => alert.percentage > 0)
     .sort((a, b) => b.percentage - a.percentage);
 
-  const receitasCateg = allTransactions
+  const incomeCategoriesMap = allTransactions
     .filter(t => t.month === currentMonthStr && t.type === 'income')
     .reduce((acc, t) => {
       const cat = t.category;
@@ -438,7 +493,7 @@ export async function getDashboardDataAction() {
       return acc;
     }, {} as Record<string, number>);
 
-  const incomeByCategory = Object.entries(receitasCateg)
+  const incomeByCategory = Object.entries(incomeCategoriesMap)
     .filter(([_, total]) => total > 0)
     .map(([category, total]) => ({
       category,
@@ -468,11 +523,11 @@ export async function getDashboardDataAction() {
       description: t.description,
       category: t.category,
       amount: Number(t.amount),
-      type: t.type === 'income' ? 'income' : 'expense'
+      type: (t.type === 'income' ? 'income' : 'expense') as 'income' | 'expense'
     }));
 
-  const mesAnterior = getPreviousMonth(currentMonthStr);
-  const mesSeguinte = getNextMonth(currentMonthStr);
+  const previousMonth = getPreviousMonth(currentMonthStr);
+  const nextMonth = getNextMonth(currentMonthStr);
 
   const calcMonthTotal = (monthStr: string, type: 'income' | 'expense') => {
     return allTransactions
@@ -480,9 +535,9 @@ export async function getDashboardDataAction() {
       .reduce((sum, t) => sum + Number(t.amount), 0);
   };
 
-  const previousMonthBalance = calcMonthTotal(mesAnterior, 'income') - calcMonthTotal(mesAnterior, 'expense');
+  const previousMonthBalance = calcMonthTotal(previousMonth, 'income') - calcMonthTotal(previousMonth, 'expense');
   const currentMonthBalance = monthlyIncome - monthlyExpenses;
-  const nextMonthBalance = calcMonthTotal(mesSeguinte, 'income') - calcMonthTotal(mesSeguinte, 'expense');
+  const nextMonthBalance = calcMonthTotal(nextMonth, 'income') - calcMonthTotal(nextMonth, 'expense');
 
   // --- Credit Card Summary ---
   const userCreditCards = await db.select()
@@ -501,26 +556,26 @@ export async function getDashboardDataAction() {
 
   userCreditCards.forEach(card => {
     creditCardSummary.totalLimit += card.creditLimit;
-    
+
     // Transactions for this card this month
     const cardTransactions = allTransactions.filter(t => t.creditCardId === card.id && t.month === currentMonthStr);
     const invoiceTotal = cardTransactions.reduce((acc, t) => acc + Number(t.amount), 0);
-    
+
     // Existing invoice record?
     const existingInvoice = userInvoices.find(inv => inv.creditCardId === card.id);
     const finalAmount = existingInvoice ? existingInvoice.totalAmount : invoiceTotal;
-    
+
     creditCardSummary.totalUsed += finalAmount;
-    
+
     creditCardSummary.cards.push({
-        id: card.id,
-        name: card.name,
-        brand: card.brand,
-        color: card.color,
-        limit: card.creditLimit,
-        used: finalAmount,
-        dueDay: card.dueDay,
-        closingDay: card.closingDay
+      id: card.id,
+      name: card.name,
+      brand: card.brand,
+      color: card.color,
+      limit: card.creditLimit,
+      used: finalAmount,
+      dueDay: card.dueDay,
+      closingDay: card.closingDay
     });
   });
 
@@ -550,8 +605,8 @@ export async function getDashboardDataAction() {
     performanceData,
     recentTransactions,
     previousMonthData: {
-      month: mesAnterior,
-      monthName: getMonthName(mesAnterior),
+      month: previousMonth,
+      monthName: getMonthName(previousMonth),
       total: previousMonthBalance
     },
     currentMonthData: {
@@ -560,8 +615,8 @@ export async function getDashboardDataAction() {
       total: currentMonthBalance
     },
     nextMonthData: {
-      month: mesSeguinte,
-      monthName: getMonthName(mesSeguinte),
+      month: nextMonth,
+      monthName: getMonthName(nextMonth),
       total: nextMonthBalance
     },
     topSavingsGoals: userSavingsGoals,
@@ -575,7 +630,7 @@ export async function getDashboardDataAction() {
             return aDiff - bDiff;
         })
         .slice(0, 3)
-        .map(b => ({ ...b, type: b.type })), // Ensure type is passed
+        .map(b => ({ ...b, type: b.type })), 
     insights,
     creditCardSummary
   };

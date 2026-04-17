@@ -36,8 +36,8 @@ export function AccountModal({ children }: { children: React.ReactNode }) {
             {activeTab === 'billing'
               ? 'Billing'
               : activeTab === 'profile'
-              ? 'Profile'
-              : 'Security'}{' '}
+                ? 'Profile'
+                : 'Security'}{' '}
             details
           </DialogTitle>
           <DialogDescription>
@@ -45,8 +45,8 @@ export function AccountModal({ children }: { children: React.ReactNode }) {
             {activeTab === 'billing'
               ? 'billing'
               : activeTab === 'profile'
-              ? 'profile'
-              : 'security'}{' '}
+                ? 'profile'
+                : 'security'}{' '}
             information and settings.
           </DialogDescription>
         </div>
@@ -77,13 +77,12 @@ export function AccountModal({ children }: { children: React.ReactNode }) {
               <h3 className="text-sm font-medium text-muted-foreground">
                 Profile
               </h3>
-              <div className="flex items-center gap-4 p-4 rounded-lg border bg-card">
+              <div className="flex items-center gap-4 p-4 rounded-md border bg-card">
                 <Avatar className="h-16 w-16">
                   <AvatarImage
                     src={
                       user?.image ??
-                      `https://api.dicebear.com/9.x/${
-                        AVATAR_STYLE || '/placeholder.svg'
+                      `https://api.dicebear.com/9.x/${AVATAR_STYLE || '/placeholder.svg'
                       }/svg?seed=${user?.name}`
                     }
                     alt={user?.name}
@@ -107,7 +106,7 @@ export function AccountModal({ children }: { children: React.ReactNode }) {
               <h3 className="text-sm font-medium text-muted-foreground">
                 Email addresses
               </h3>
-              <div className="p-4 rounded-lg border bg-card">
+              <div className="p-4 rounded-md border bg-card">
                 <p className="text-sm font-medium">
                   {user?.email || 'example@personal.com'}
                 </p>

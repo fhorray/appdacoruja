@@ -1,7 +1,7 @@
 export const ROUTES = {
   public: ['/auth', '/', "/pricing"],
-  private: ['/', '/settings', '/profile', '/analisar'],
+  private: ['/dashboard', '/settings', '/profile', '/analisar'],
   auth: ['/auth'],
 }
 
-export const MAIN_URL = '/'
+export const MAIN_URL = '/dashboard'

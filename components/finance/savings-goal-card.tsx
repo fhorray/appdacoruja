@@ -4,11 +4,11 @@ import { Progress } from "@/components/ui/progress";
 import { Target, TrendingUp, MoreVertical, Edit2, Trash2, CheckCircle2 } from "lucide-react";
 import { SelectSavingsGoal } from "@/server/database/schemas";
 import { cn } from "@/lib/utils";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import * as Icons from "lucide-react";
@@ -22,18 +22,18 @@ interface SavingsGoalCardProps {
   isPrivate?: boolean;
 }
 
-export function SavingsGoalCard({ 
-  goal, 
-  onEdit, 
-  onDelete, 
-  onDeposit, 
+export function SavingsGoalCard({
+  goal,
+  onEdit,
+  onDelete,
+  onDeposit,
   onWithdraw,
-  isPrivate = false 
+  isPrivate = false
 }: SavingsGoalCardProps) {
-  
+
   const progress = Math.min(100, Math.max(0, (goal.currentAmount / goal.targetAmount) * 100));
   const isCompleted = progress >= 100;
-  
+
   const IconComponent = goal.icon && (Icons as any)[goal.icon] ? (Icons as any)[goal.icon] : Target;
 
   const formatCurrency = (value: number) => {
@@ -49,9 +49,9 @@ export function SavingsGoalCard({
       <CardContent className="p-5">
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-3">
-            <div 
+            <div
               className={cn(
-                "p-2.5 rounded-xl flex items-center justify-center",
+                "p-2.5 rounded-md flex items-center justify-center",
                 isCompleted ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400" : "bg-primary/10 text-primary"
               )}
               style={!isCompleted && goal.color ? { backgroundColor: `${goal.color}15`, color: goal.color } : {}}
@@ -114,14 +114,14 @@ export function SavingsGoalCard({
             </span>
           </div>
 
-          <Progress 
-            value={progress} 
-            className="h-2.5 bg-secondary/50" 
+          <Progress
+            value={progress}
+            className="h-2.5 bg-secondary/50"
             indicatorClassName={cn(
               "transition-all duration-500",
               isCompleted ? "bg-emerald-500" : (goal.color ? "" : "bg-primary")
             )}
-            style={{ 
+            style={{
               ...(goal.color && !isCompleted ? { '--progress-color': goal.color } as any : {})
             }}
           />

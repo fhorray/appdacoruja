@@ -30,6 +30,8 @@ export function InvoiceDetailSheet({ cardId, referenceMonth, isOpen, onClose }: 
 
   return (
     <CustomSheet
+      open={isOpen}
+      onOpenChange={(open) => !open && onClose()}
       title={data?.card ? `Fatura ${data.card.name}` : 'Detalhes da Fatura'}
       className="px-4 !max-w-xl"
       content={({ close }) => {
@@ -51,7 +53,7 @@ export function InvoiceDetailSheet({ cardId, referenceMonth, isOpen, onClose }: 
               <>
                 <div className="space-y-6 flex-1 overflow-y-auto pb-24">
                   {/* Header Info */}
-                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
+                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-md">
                     <div>
                       <h3 className="text-sm font-medium text-muted-foreground">Valor Total</h3>
                       <p className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600">
@@ -87,9 +89,9 @@ export function InvoiceDetailSheet({ cardId, referenceMonth, isOpen, onClose }: 
                       <CreditCard className="w-4 h-4" />
                       Lançamentos do Mês
                     </h4>
-                    
+
                     {data.transactions.length === 0 ? (
-                      <div className="text-center p-8 border rounded-xl border-dashed">
+                      <div className="text-center p-8 border rounded-md border-dashed">
                         <p className="text-sm text-muted-foreground">Nenhuma transação nesta fatura.</p>
                       </div>
                     ) : (
@@ -114,7 +116,7 @@ export function InvoiceDetailSheet({ cardId, referenceMonth, isOpen, onClose }: 
 
                 {/* Footer fixed */}
                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t">
-                  <Button 
+                  <Button
                     className="h-12 text-base font-medium shadow-lg hover:shadow-xl transition-all"
                     disabled={data.invoice?.status === 'paid' || data.transactions.length === 0 || payInvoice.isPending}
                     onClick={async () => {

@@ -27,6 +27,9 @@ function TransactionsContent() {
   const [responsible, setResponsible] = useQueryState('responsible', {
     defaultValue: '',
   });
+  const [creditCardId, setCreditCardId] = useQueryState('creditCardId', {
+    defaultValue: '',
+  });
 
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
@@ -62,9 +65,11 @@ function TransactionsContent() {
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza?')) return;
     await deleteTransaction.mutateAsync(id);
+    if (!confirm('Tem certeza?')) return;
+    await deleteTransaction.mutateAsync(id);
   };
 
-  const filters = { month, category, type, status, responsible };
+  const filters = { month, category, type, status, responsible, creditCardId };
 
   const handleFilterChange = (key: string, value: string) => {
     const emptyValue = value === 'all' ? '' : value;
@@ -93,6 +98,7 @@ function TransactionsContent() {
     setType(null);
     setStatus(null);
     setResponsible(null);
+    setCreditCardId(null);
   };
 
   return (
